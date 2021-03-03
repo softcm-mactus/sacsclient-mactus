@@ -1,9 +1,10 @@
 import React from 'react';
 import SACSDataServices from "../Services/sacs.services";
-import { Link, Redirect } from 'react-router-dom';
-import { Dropdown, Nav, Navbar, NavDropdown, Form,FormControl, Button } from 'react-bootstrap';
+// import { Link, Redirect } from 'react-router-dom';
+import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAddressCard, faHome, faAngleDown, faCogs, faUsersCog, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faAngleDown, faCogs, faUsersCog, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+
 
 
 export default class Menus extends React.PureComponent {
@@ -13,12 +14,16 @@ export default class Menus extends React.PureComponent {
         this.state = {
             Menus: [],
             Server: [],
+            MenuDisplay: ""
         }
     }
     componentDidMount() {
         this.timer = setInterval(() => {
             this.retriveSACSServerStatus();
         }, 6000);
+    }
+    retriveUserMenuMapping() {
+
     }
     componentWillUnmount() {
         clearInterval(this.timer);
@@ -29,7 +34,7 @@ export default class Menus extends React.PureComponent {
             this.setState({
                 Server: response.data
             });
-            console.log(response.data);
+            //console.log(response.data);
         }).catch(e => {
             console.log(e);
         })
@@ -53,36 +58,64 @@ export default class Menus extends React.PureComponent {
                                 Dashboard
                             </Dropdown.Toggle>                            
                         </Dropdown> */}
+
                         <Navbar bg="" expand="lg">
-                           
+
                             <Navbar.Toggle aria-controls="basic-navbar-nav" />
                             <Navbar.Collapse id="basic-navbar-nav">
                                 <Nav className="mr-auto">
-                                    <Nav.Link href="/Dashboard"><FontAwesomeIcon icon={faHome}></FontAwesomeIcon> Dashboard</Nav.Link>                                    
-                                    <NavDropdown title={<span><FontAwesomeIcon icon={faFileAlt}></FontAwesomeIcon> Reports <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon> </span> }
-                                     id="basic-nav-dropdown">
-                                        <NavDropdown.Item href="/Auditreport"> Audit Trail</NavDropdown.Item>
-                                        <NavDropdown.Item href="/ConfigReport">Config Change</NavDropdown.Item>
-                                        <NavDropdown.Item href="/EntryExitReport">Entry/Exit</NavDropdown.Item>
+                                    <Nav.Link href="/Dashboard"><FontAwesomeIcon icon={faHome}></FontAwesomeIcon> Dashboard</Nav.Link>
+                                    <NavDropdown style={{ pointerEvents: localStorage.getItem('UserId') ? "" : "none" }}
+                                        title={<span><FontAwesomeIcon icon={faFileAlt} >
+                                        </FontAwesomeIcon> Reports <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon> </span>}
+                                        id="basic-nav-dropdown">
+                                        <div className="row form-group">
+                                            <div className="col-md-12">
+                                                <NavDropdown.Item style={{ pointerEvents: 'none' }} href=""><b>Audit Trail Reports</b> </NavDropdown.Item>
+                                                <NavDropdown.Item href="/Auditreport"> Audit Trail</NavDropdown.Item>
+                                                <NavDropdown.Item href="/ConfigReport">Config Change</NavDropdown.Item>
+                                                <NavDropdown.Divider />
+                                            </div>
+                                            <div className="col-md-12">
+                                                <NavDropdown.Item style={{ pointerEvents: 'none' }} href=""><b>Filling Line Reports</b> </NavDropdown.Item>
+                                                <NavDropdown.Item href="/AlarmReport">Alarm Summary </NavDropdown.Item>
+                                                <NavDropdown.Item href="/LineEvent">Event Report</NavDropdown.Item>
+                                              
+                                                {/* <NavDropdown.Item href="/AlarmReport">Alarm Summary </NavDropdown.Item> */}
+                                                <NavDropdown.Item href="/Alarm">Alarm History </NavDropdown.Item>
+
+                                                <NavDropdown.Divider />
+                                            </div>
+                                        </div>
+                                        <NavDropdown.Item style={{ pointerEvents: 'none' }} href=""><b>Bio Users Reports</b> </NavDropdown.Item>
+                                        <NavDropdown.Item href="/UserEntryExit">Entry/Exit Report</NavDropdown.Item>
+                                        <NavDropdown.Item href="/EventReport">Events Report</NavDropdown.Item>
+                                        <NavDropdown.Item href="/DiscReport">Discrepancy Report</NavDropdown.Item>
+                                        <NavDropdown.Item style={{ pointerEvents: 'none' }} href=""><b>Other Reports</b> </NavDropdown.Item>
                                         <NavDropdown.Item href="/VisitorsReport">Visitors</NavDropdown.Item>
-                                        <NavDropdown.Item href="/Alarm">Alarm History</NavDropdown.Item>
-                                        <NavDropdown.Divider />                                                                               
+                                        <NavDropdown.Item href="/DiscLineReport">Discrepancy Report</NavDropdown.Item>
                                     </NavDropdown>
-                                    
-                                    <NavDropdown title={<span><FontAwesomeIcon icon={faCogs}></FontAwesomeIcon> Configurations <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon></span> } id="basic-nav-dropdown">                                     
-                                        <NavDropdown.Item href="/SiteConfig"> Site Configurations</NavDropdown.Item>
-                                        <NavDropdown.Item href="/LineConfig"> Line Configurations</NavDropdown.Item>  
-                                        <NavDropdown.Item href="/CheckListConfig"> Checklist Configurations</NavDropdown.Item>                                       
-                                        <NavDropdown.Divider />                                                                              
+
+                                    <NavDropdown style={{ pointerEvents: localStorage.getItem('UserId') ? "" : "none" }} title={<span>
+                                        <FontAwesomeIcon icon={faCogs}></FontAwesomeIcon> Configurations <FontAwesomeIcon icon={faAngleDown}>
+                                        </FontAwesomeIcon></span>} id="basic-nav-dropdown">
+                                        <NavDropdown.Item href="/SiteConfig">Site Configurations</NavDropdown.Item>
+                                        <NavDropdown.Item href="/LineConfig">Line Configurations</NavDropdown.Item>
+                                        <NavDropdown.Item href="/CheckListConfig">Checklist Configurations</NavDropdown.Item>
+                                        <NavDropdown.Item href="/VoiceConfig"> Voice Message Configurations</NavDropdown.Item>
+                                        <NavDropdown.Item href="/StdMessage"> Send Voice Messages</NavDropdown.Item>
+
                                     </NavDropdown>
                                     {/* // Users Management */}
-                                    <NavDropdown title={<span><FontAwesomeIcon icon={faUsersCog}></FontAwesomeIcon> Users Managemet <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon> </span> } id="basic-nav-dropdown">
+                                    <NavDropdown style={{ pointerEvents: localStorage.getItem('UserId') ? "" : "none" }} title={<span>
+                                        <FontAwesomeIcon icon={faUsersCog}></FontAwesomeIcon> Users Managemet <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon> </span>} id="basic-nav-dropdown">
                                         <NavDropdown.Item href="/BioUsers">Bio Users</NavDropdown.Item>
                                         <NavDropdown.Item href="/AddUser">Add Admin Usres</NavDropdown.Item>
-                                       
-                                        <NavDropdown.Divider />                                       
+
+                                        {/* <NavDropdown.Divider />                                        */}
                                     </NavDropdown>
-                                </Nav>                                
+                                    
+                                </Nav>
                             </Navbar.Collapse>
                         </Navbar>
 

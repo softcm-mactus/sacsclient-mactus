@@ -481,7 +481,7 @@ html [type="button"],
 
 .dropdown-toggle::after {
   font-family: "FontAwesome";
-  content: "\f107" !important;
+  /* content: "\f107" !important; */
   border: none !important;
   position: relative;
   top: 1px;
@@ -692,9 +692,9 @@ html [type="button"],
   .header-navbar.navbar-without-dd-arrow .nav-link.dropdown-toggle::after {
     display: none; }
   .header-navbar.navbar-brand-center .navbar-header {
-    width: 150px;
+    width: 160px;
     position: absolute;
-    left: 50%;
+    left: 40%;
     top: 0;
     padding: 0;
     margin: 0;

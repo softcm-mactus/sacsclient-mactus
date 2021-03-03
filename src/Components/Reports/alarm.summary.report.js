@@ -1,53 +1,68 @@
 import React from 'react';
 import SACSDataServices from '../../Services/sacs.services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-//import { TablePagination } from "react-pagination-table";
-import moment from "moment";
 import DatePicker from 'react-datepicker';
 import { faSync, } from '@fortawesome/free-solid-svg-icons';
 import { jsPDF, printHeaderRow } from 'jspdf';
 import 'jspdf-autotable';
-
-export default class ConfigReport extends React.Component {
+import moment from "moment";
+export default class AlarmReport extends React.Component {
     constructor(props) {
         super(props);
-        this.retriveConfigChnageDataByDate = this.retriveConfigChnageDataByDate.bind(this);
+        this.retriveAllLinesDate = this.retriveAllLinesDate.bind(this);
+        this.retriveAlarmHistoryDate = this.retriveAlarmHistoryDate.bind(this);
+
         this.state = {
+            Lines: [],
             data: [],
-            Fromdate: new Date() - 1,
+            LineId:0,
+            Fromdate: new Date(),
             todate: new Date(),
+            SelectedLineName:"",
         }
     }
     componentDidMount() {
-
-        this.retriveConfigChnageDataByDate();
+        this.retriveAllLinesDate();
+        this.retriveAlarmHistoryDate();
+        
         // const [value, onChange] = useState(new Date());
     }
-
-    onChange = (e) => {
-        SACSDataServices.GetConfigurationChangeReportByDate(e.target.value).then(response => {
+    retriveAllLinesDate() {
+        SACSDataServices.GetALlLines().then(response => {
             this.setState({
-                data: response.data
+                Lines: response.data
             });
-            console.log(response.data);
+            this.setState({
+                SelectedLineName:response.data[0].lineName
+            })
         }).catch(e => {
             console.log(e);
         });
     }
-    onClick = () => {
-        this.retriveConfigChnageDataByDate();
+    onChange = (e) => {
+        SACSDataServices.GetAllAlarmSummaryByLineID(moment(this.state.Fromdate).format("DD-MM-yyyy"),
+        moment(e).format("DD-MM-yyyy"),e.target.value).then(response => {
+            this.setState({
+                data: response.data,
+                LineId:e.target.value,
+                SelectedLineName:e.target.options[e.target.selectedIndex].text
+            });
+            
+        }).catch(e => {
+            console.log(e);
+        });
     }
-
     changeFromDate = (e) => {
 
         this.setState({
             Fromdate: e
         });
-        SACSDataServices.GetConfigurationChangeReportByDate(moment(e).format("DD-MM-yyyy"), moment(this.state.todate).format("DD-MM-yyyy")).then(response => {
+        SACSDataServices.GetAllAlarmSummaryByLineID(moment(e).format("DD-MM-yyyy"),
+        moment(e).format("DD-MM-yyyy"), this.state.LineId).then(response => {
             this.setState({
                 data: response.data
             });
-            console.log(response.data);
+           
         }).catch(e => {
             console.log(e);
         });
@@ -57,18 +72,30 @@ export default class ConfigReport extends React.Component {
         this.setState({
             todate: e
         });
-        SACSDataServices.GetConfigurationChangeReportByDate(moment(this.state.Fromdate).format("DD-MM-yyyy"), moment(e).format("DD-MM-yyyy")).then(response => {
+        SACSDataServices.GetAllAlarmSummaryByLineID(moment(this.state.Fromdate).format("DD-MM-yyyy"),
+        moment(e).format("DD-MM-yyyy"), this.state.LineId).then(response => {
             this.setState({
                 data: response.data
             });
-            console.log(response.data);
+            
         }).catch(e => {
             console.log(e);
         });
     }
-    retriveConfigChnageDataByDate() {
-
-        SACSDataServices.GetConfigurationChangeReportByDate(moment(this.state.Fromdate).format("DD-MM-yyyy"), moment(this.state.todate).format("DD-MM-yyyy")).then(response => {
+    onClick = () => {
+        SACSDataServices.GetAllAlarmSummaryByLineID().then(response => {
+            this.setState({
+                data: response.data
+            });
+         
+        }).catch(e => {
+            console.log(e);
+        });
+    }
+    
+    retriveAlarmHistoryDate() {
+        SACSDataServices.GetAllAlarmSummaryByLineID(moment(this.state.Fromdate).format("DD-MM-yyyy"),
+        moment(this.state.todate).format("DD-MM-yyyy"), this.state.LineId).then(response => {
             this.setState({
                 data: response.data
             });
@@ -78,12 +105,10 @@ export default class ConfigReport extends React.Component {
         });
     }
     generatePDF = () => {
-        var doc = new jsPDF('p', 'mm', 'A3');
-        //  var totalPagesExp = '{total_pages_count_string}' 
+        var doc = new jsPDF('p', 'mm', 'A3');        
           doc.page = 1
           var totalPagesExp =  doc.internal.getNumberOfPages();
         
-      //   doc.fromHtml(header)
           doc.autoTable({
               html: '#my-table',
               theme: 'grid',
@@ -94,12 +119,9 @@ export default class ConfigReport extends React.Component {
                   halign: 'left'
               },
               columnStyles: {
-                
-                  0: {cellWidth: 60},
-                          1: {cellWidth: 60},
-                          2: {cellWidth: 75},
-                          2: {cellWidth: 75},
-                
+                  0: {cellWidth: 'wrap'},
+                        
+  
               },
   
               didDrawPage: function (data) {
@@ -117,7 +139,7 @@ export default class ConfigReport extends React.Component {
                       },                                        
                       //setFontSize: 15,
                       columnStyles: {
-                          0: {cellWidth: 40},
+                          0: {cellWidth: 'wrap'},
                           1: {cellWidth: 50},
                           2: {cellWidth: 180},
                       },  
@@ -168,8 +190,10 @@ export default class ConfigReport extends React.Component {
                        + "                          Checked By       " + "                        Verified By                      " +
                'Page ' + String(i) + ' of ' + String(pageCount),40-20, pageHeight-10,null,null,"left");
           }
-        doc.save('ConfigurationChangeReport' + moment(new Date()).format("DDMMYYHHmmss") + '.pdf')
+        doc.save('AlarmSummaryReport' + moment(new Date()).format("DDMMYYHHmmss") + '.pdf')
     }
+
+
     render() {
         return (
 
@@ -178,7 +202,7 @@ export default class ConfigReport extends React.Component {
                 <div className="content-wrapper">
                     <div className="content-header row">
                         <div className="content-header-left col-md-6 col-12 mb-2">
-                            <h3 className="content-header-title mb-0">Configuration Change Report</h3>
+                            <h3 className="content-header-title mb-0">Alarm Summary Report</h3>
                         </div>
                     </div>
                     <div className="content-body">
@@ -193,13 +217,31 @@ export default class ConfigReport extends React.Component {
                                                         <div className="card-content">
                                                             <div className="card-body">
                                                                 <div className="row">
+                                                                    <div className="col-xl-2 col-lg-6 col-md-12 mb-1">
+                                                                        <fieldset className="form-group">
+                                                                            <h4 for="basicInput">Select Line</h4>
+                                                                            <select id="ddlLines" onChange={this.onChange} className=" form-control" name="ddlLines"
+                                                                                defaultValue={this.state.selectValue}
+                                                                                onChange={this.onChange}
+                                                                                className="form-control col-md-12">
+                                                                                {
+                                                                                    this.state.Lines.map(lines => (
+                                                                                        <option className="" value={lines.id}>
+                                                                                            {lines.lineName}
+                                                                                        </option>
+                                                                                    ))}
+                                                                            </select>
+                                                                        </fieldset>
+                                                                    </div>
+
                                                                     <div className="col-xl-3 col-lg-6 col-md-12 mb-1">
                                                                         <fieldset className="form-group">
                                                                             <h4 for="helpInputTop">From Date</h4>
+
                                                                             <DatePicker className="form-control"
                                                                                 selected={this.state.Fromdate}
-                                                                                showPopperArrow={false}
                                                                                 dateFormat="dd-MM-yyyy"
+                                                                                showPopperArrow={false}
                                                                                 onChange={this.changeFromDate} />
                                                                             {/* <input type="text"  value={moment(this.state.Fromdate).subtract(1, 'days').format("DD-MM-YYYY")}
                                                                                 className="form-control" id="helpInputTop"></input> */}
@@ -210,8 +252,8 @@ export default class ConfigReport extends React.Component {
                                                                             <h4 for="disabledInput">To Date</h4>
                                                                             <DatePicker className="form-control"
                                                                                 selected={this.state.todate}
-                                                                                showPopperArrow={false}
                                                                                 dateFormat="dd-MM-yyyy"
+                                                                                showPopperArrow={false}
                                                                                 onChange={this.changeToDate} />
                                                                             {/* <input type="datetime" value={moment(this.state.todate).format("DD-MM-YYYY")} className="form-control" id="disabledInput"></input> */}
                                                                         </fieldset>
@@ -236,39 +278,49 @@ export default class ConfigReport extends React.Component {
                                             </div>
                                         </div>
                                         <div className="card-content collapse show">
+                                            
                                             <table id="tblHeader" style={{ display: 'none' }} className="table display nowrap table-striped table-bordered scroll-horizontal">
-                                                <tr>
-                                                    <td rowspan="2">
-                                                    </td>
-                                                    <td rowspan="2" >
-                                                        <br></br>
-                                                        <h1 >{localStorage.getItem('plant')}</h1>
-                                                    </td>
-                                                    <td><h3>{localStorage.getItem('app')}</h3></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><h3> System Configuration Change Report</h3></td>
-                                                </tr>
-                                            </table>
+                                                    <tr>
+                                                        <td rowspan="2">
+                                                            {/* <img src={logo} alt="logo"></img>
+                                                            <span style={{ display: "none" }}>Sunpharma Halol</span> */}
+                                                        </td>
+                                                        <td rowspan="2" >
+                                                            <br></br>
+                                                            <h1 >{localStorage.getItem('plant')}</h1>
+                                                        </td>
+                                                        <td><h3>{localStorage.getItem('app')}</h3></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><h3> {this.state.SelectedLineName} : Alarm Summary Report</h3></td>
+                                                    </tr>
+                                                </table>
                                             <div className="card-body card-dashboard">
                                                 <table id="my-table" className="table display nowrap table-striped table-bordered scroll-horizontal">
                                                     <thead>
                                                         <tr>
-                                                            <th>DateTime</th>
-                                                            <th>User Name</th>
-                                                            <th>Message Details</th>
-                                                            <th>Remarks</th>
+                                                            {/* <th>Line Name</th> */}
+                                                            <th>Alarm DateTime</th>
+                                                            <th>Alarm Tag</th>
+                                                            <th>Alarm Description</th>
+                                                            <th>Alarm Ack. User</th>
+                                                            <th>Alarm Ack. Datetime</th>
+                                                            <th>Rearks</th>
+                                                            <th>RTN DateTime</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {
-                                                            this.state.data.map(audit => (
-                                                                <tr key={audit.id}>
-                                                                    <td>{audit.eventTime}</td>
-                                                                    <td>{audit.userName}</td>
-                                                                    <td>{audit.eventMessage}</td>
-                                                                    <td>{audit.remarks}</td>
-
+                                                            this.state.data.map(alarm => (
+                                                                <tr key={alarm.id}>
+                                                                    {/* <td>{alarm.lineName}</td> */}
+                                                                    <td>{alarm.alarmDateTime}</td>
+                                                                    <td>{alarm.alarmTag}</td>
+                                                                    <td>{alarm.alarmDesc}</td>
+                                                                    <td>{alarm.alarmAckUser}</td>
+                                                                    <td>{alarm.alarmAckDateTime}</td>
+                                                                    <td>{alarm.remarks}</td>
+                                                                    <td>{alarm.alarmRtnDateTime}</td>
                                                                 </tr>
                                                             ))}
                                                     </tbody>

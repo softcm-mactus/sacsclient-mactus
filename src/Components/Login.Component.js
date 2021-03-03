@@ -9,65 +9,87 @@ import { faKey } from '@fortawesome/free-solid-svg-icons';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import SACSDataServices from "../Services/sacs.services";
-import { Redirect } from 'react-router-dom';
+// import { connect } from 'react-redux';
 
 export default class LoginComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            UserId: "",
-            Password: "",
+            UserId: '',
+            FirstName: '',
+            LastName: "",
             ActionName: "Login",
             loginErrors: "",
-            Alert: "none"
+            Alert: "none",
+            Token: "",
+            timeout: 0,
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
     handleChange(event) {
-        //alert(hi);
+       
         this.setState({
             [event.target.name]: event.target.value
-            // email: event.target.value,
-            // password: event.target.value,
+            
         });
     }
 
     handleSubmit(event) {
 
         const { UserId, Password } = this.state;
-        //alert(this.state.email);
+       
         var data = {
             UserId: this.state.UserId,
             Password: this.state.Password
         };
-        //alert(JSON.stringify(data));
-
-        SACSDataServices.CheckUserskLogin(data).then(response => {
-
-            if (response.data == "Success") {
-                //alert(response.data)
-                this.setState({ ActionName: "Logout" });
-                return <Redirect to='/dashboard' />
+       
+        SACSDataServices.CheckUserskLogin(data).then(user => {
+            
+            if (user.data != null && user.data != "") {
+               
+                this.setState({
+                    ActionName: "Logout",
+                    UserId: user.data.userId,
+                    FirstName: user.data.firstName,
+                    LastName: user.data.lastName,
+                    Token: user.data.token,
+                    timeout: user.data.timeOut,
+                });               
+                if(this.state.UserId!=null && this.state.UserId!=""){
+                    localStorage.setItem('UserId', this.state.UserId);
+                    localStorage.setItem('Token', this.state.Token);
+                    localStorage.setItem('FirstName', this.state.FirstName);
+                    localStorage.setItem('timeout', this.state.timeout);                           
+                    this.props.history.push("/");
+                }                
             }
             else {
-                this.setState({
-                    loginErrors: response.data,
-                    Alert: ""
-                })
-            }
-            // if (response.data.logged_in) {
-            //     this.props.handleSuccessfulAuth(response.data);
-            //   }
-            console.log(response.data);
+                //alert(JSON.stringify(user.data))
+                SACSDataServices.CheckUserLoginError(data).then(error => {                                    
+                    this.setState({
+                        loginErrors: error.data,
+                        Alert: ""
+                    })
+                }).catch(e=>{
+
+                })                
+            }            
+            console.log(user.data);
         }).catch(e => {
-            console.log("login error", e);
-            alert(JSON.stringify(e));
+            console.log("login error", e);            
+           // alert(JSON.stringify(e))
+            this.setState({
+                loginErrors:"Something went wrong ",
+                Alert: ""
+            })
         });
         event.preventDefault();
     }
     render() {
+        const { loggingIn } = this.props;
+        const { UserId, FirstName, LastName, Token } = this.state;
         return (
             <section className="row flexbox-container" style={{ paddingTop: "20px" }}>
                 <div className="col-12 d-flex align-items-center justify-content-center">
@@ -85,9 +107,10 @@ export default class LoginComponent extends React.Component {
                                 <div className="card-body">
                                     <form onSubmit={e => e.preventDefault()} className="form-horizontal form-simple"  >
                                         <fieldset className="form-group position-relative has-icon-left mb-0">
-                                            <input type="text" onChange={this.handleChange}
+                                            <input type="text" onChange={this.handleChange} 
+                                            // style={{textTransform:"uppercase"}}
                                                 className="form-control form-control-lg" autoComplete="false"
-                                                id="UserId" name="UserId" placeholder="Your Username" required></input>
+                                                id="UserId" name="UserId" placeholder="Please enter username" required></input>
                                             <div className="form-control-position">
                                                 <FontAwesomeIcon icon={faUser}></FontAwesomeIcon>
                                             </div>
@@ -96,7 +119,7 @@ export default class LoginComponent extends React.Component {
                                         <fieldset className="form-group position-relative has-icon-left">
                                             <input type="password" className="form-control form-control-lg"
                                                 autoComplete="false" id="Password" name="Password"
-                                                onChange={this.handleChange} placeholder="Enter Password" required></input>
+                                                onChange={this.handleChange} placeholder="Please enter password" required></input>
                                             <div className="form-control-position">
                                                 <FontAwesomeIcon icon={faKey} ></FontAwesomeIcon>
                                             </div>
@@ -105,7 +128,7 @@ export default class LoginComponent extends React.Component {
                                         <div className={this.state.loginErrors != "Success" ? "alert alert-danger" : "alert alert-success"} role="alert" style={{ display: this.state.Alert }}>
                                             <span className="text-bold-600 text-center">{this.state.loginErrors}</span>
                                         </div>
-
+                                        {loggingIn && <span>Loggedin</span>}
                                         <button type="submit" onClick={this.handleSubmit} className="btn btn-primary btn-lg btn-block">
                                             <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> Login</button>
                                     </form>
@@ -118,3 +141,12 @@ export default class LoginComponent extends React.Component {
         )
     }
 }
+// function mapStateToProps(state) {
+//     const { loggingIn } = state.authentication;
+//     return {
+//         loggingIn
+//     };
+// }
+
+// const connectedLoginPage = connect(mapStateToProps)(LoginComponent);
+// export { connectedLoginPage as LoginComponent };

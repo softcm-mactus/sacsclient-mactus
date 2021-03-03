@@ -12,17 +12,22 @@ export default class BioUsersComponent extends React.Component {
             BioUsers: [],
             Depts: [],
             Trainings: [],
+            AdminUsers: [],
             LineAssociate: [],
             show: true,
             UserId: "",
             Alerts: "none",
             isTrainngOpen: false,
-            islineAssociateOpen:false,
-            isPINChangeOpen:false,
+            islineAssociateOpen: false,
+            isPINChangeOpen: false,
             Message: "",
             ShowMessage: "none",
             ExpiryDate: new Date(),
-            LAssociatechecked:"checked"
+            LAssociatechecked: "checked",
+            AudioName: "",
+            isAudioChangeOpen: false,
+            isLinkAdminChangeOpen: false,
+            SelectedAdminUserId: "",
         }
     }
     componentDidMount() {
@@ -72,10 +77,23 @@ export default class BioUsersComponent extends React.Component {
         //     console.log(e);
         // });
     }
-    changeExpiryDate = (e) => {
-        e.preventDefault();
+    changeExpiryDate(index, dataType, value) {
+        const newState = this.state.Trainings.map((item, i) => {
+            if (i === index) {
+                if (dataType === "enabled") {
+                    if (value == 1)
+                        value = 0;
+                    else if (value == 0)
+                        value = 1;
+
+                }
+                return { ...item, [dataType]: value };
+            }
+            return item;
+        });
+
         this.setState({
-            ExpiryDate: e
+            Trainings: newState
         });
     }
     changeDepartment = (e) => {
@@ -179,36 +197,152 @@ export default class BioUsersComponent extends React.Component {
         });
         this.setState({ islineAssociateOpen: true, Alerts: "none" });
     }
-    ResetPINModal=(e)=>{
-       
-        this.setState({ isPINChangeOpen: true, Alerts: "none", UserId:e.target.value });
+    ResetPINModal = (e) => {
+
+        this.setState({ isPINChangeOpen: true, Alerts: "none", UserId: e.target.value });
     }
-    ReSetUserHMIPIN=()=>{
-       
+    ReSetUserHMIPIN = () => {
+
         SACSDataServices.ResetHMIPINByUserId(this.state.UserId).then(response => {
-            if(response.data==true)
-            {
+            if (response.data == true) {
                 this.setState({
                     Message: "User HMI PIN Updated Successfully!",
                     ShowMessage: "",
-                    Alerts:""
+                    Alerts: ""
                 });
             }
         }).catch(e => {
             console.log(e);
         });
     }
-    AudioNameChange=(e)=>{
-        alert("hi")
-        alert(this.state.UserId)       
-    }
-    LineAssociateChange=(e)=>{
-        //alert(e.target.value)
-    }
+    handleChangeAudioName = (e) => {
 
+        this.setState({ isAudioChangeOpen: true, Alerts: "none", AudioName: e.target.value });
+    }
+    handleUpdateAudioName(e) {
+        SACSDataServices.UpdateUserAudioName(this.state.UserId, this.state.AudioName).then(response => {
+
+            if (response.data != null || response.data != "") {
+                this.setState({
+                    BioUsers: response.data,
+                    Alerts: "",
+
+                })
+            }
+
+        }).catch(e => {
+            console.log(e)
+        })
+    }
+    LineAssociateChange = (index, dataType, value) => {
+        const newState = this.state.LineAssociate.map((item, i) => {
+            if (i === index) {
+                if (dataType === "enabled") {
+                    if (value == "true")
+                        value = false;
+                    else if (value == "false")
+                        value = true;
+
+                }
+                return { ...item, [dataType]: value };
+            }
+            return item;
+        });
+
+        this.setState({
+            LineAssociate: newState
+        });
+    }
+    handleSaveLineAssociate() {
+        SACSDataServices.UpdateUserLineAssociate(this.state.LineAssociate).then(response => {
+            if (response.data === true) {
+                this.setState({
+                    Alerts: "",
+                    Message: "Line Associa details updated successfully"
+                })
+            }
+            else {
+                this.setState({
+                    Alerts: "",
+                    Message: "No Changes Training details"
+                })
+            }
+        }).catch(e => {
+            console.log(e)
+        })
+    }
+    handleUpdateTraingDetails() {
+        SACSDataServices.UpdateUserTrainingdetails(this.state.Trainings).then(response => {
+            if (response.data === true) {
+                this.setState({
+                    Alerts: "",
+                    Message: "Training details updated successfully"
+                })
+            }
+            else {
+                this.setState({
+                    Alerts: "",
+                    Message: "No Changes Training details"
+                })
+            }
+        }).catch(e => {
+            console.log(e)
+        })
+    }
+    handleSaveLinkAdmin = () => {
+       
+        if(this.state.userId && this.state.SelectedAdminUserId)
+        {
+            SACSDataServices.SaveLinkAdmin(this.state.userId, this.state.SelectedAdminUserId).then(response => {
+                if (response.data === true) {
+                    this.setState({
+                        Alerts: "",
+                        Message: "Linked Admin User Id successfully"
+                    })
+                    this.retrivebioUsers();
+                }
+                else {
+                    this.setState({
+                        Alerts: "",
+                        Message: "Data not Changed"
+                    })
+                }
+            }).catch(e => {
+                console.log(e)
+            })
+        }
+        else{
+            this.setState({
+                Alerts: "",
+                Message: "Please Select the User "
+            })
+            return false;
+        }
+        
+    }
+    openLinkAdminModal = (e) => {
+        SACSDataServices.GetAllActiveAdminUsers().then(user => {
+            this.setState({
+                AdminUsers: user.data,
+                userId:e.target.value,
+            })
+        }).catch(e => {
+            console.log(e)
+        })
+        this.setState({ isLinkAdminChangeOpen: true, Alerts: "none" });
+    }
+    changeAdminUser = (e) => {
+       
+        this.setState({
+            SelectedAdminUserId: e.target.value,
+
+        })
+    }
+    closeLinkAdminModal = () => this.setState({ isLinkAdminChangeOpen: false, UserId: "" })
     closeTrainingModal = () => this.setState({ isTrainngOpen: false, UserId: "" });
     closeLineAssociateModal = () => this.setState({ islineAssociateOpen: false, UserId: "" });
     closePINChangeModal = () => this.setState({ isPINChangeOpen: false, UserId: "" });
+    closeAudioChangeModal = () => this.setState({ isAudioChangeOpen: false, UserId: "" });
     render() {
 
         return (
@@ -332,7 +466,7 @@ export default class BioUsersComponent extends React.Component {
                                                                             }
                                                                         </td>
                                                                         <td>
-                                                                            <button className="btn btn-success"
+                                                                            <button className="btn" style={{ backgroundColor: user.associationColor }}
                                                                                 onClick={this.OpenLineAssociationModal} value={user.userEid} >
                                                                                 Change</button>
                                                                         </td>
@@ -341,13 +475,14 @@ export default class BioUsersComponent extends React.Component {
                                                                                 value={user.userEid} onClick={this.openTrainingModal}> {user.trgExpText}</button>
                                                                         </td>
                                                                         <td>
-                                                                            <button
-                                                                                className={!user.adminUserId ? "btn btn-success" : "btn btn-danger"}
+                                                                            <button className={!user.adminUserId ? "btn btn-success" : "btn btn-danger"}
+                                                                                disabled={user.adminUserId && "disabled"}
+                                                                                onClick={this.openLinkAdminModal} value={user.userEid}
                                                                                 style={{ minWidth: "100px", minHeight: "30px" }}>{user.adminUserId}</button>
                                                                         </td>
                                                                         <td>
                                                                             <button className="btn btn-primary" value={user.userEid}
-                                                                            onClick={this.ResetPINModal}>Reset</button>
+                                                                                onClick={this.ResetPINModal}>Reset</button>
                                                                         </td>
                                                                         <td>
                                                                             {user.canCommand === true ?
@@ -358,9 +493,9 @@ export default class BioUsersComponent extends React.Component {
                                                                         <td>
                                                                             <button className="btn btn-success">{user.visitorMgmt}</button>
                                                                         </td>
-                                                                        <td onClick={() => this.onClickRow(user.userEid)}>
-                                                                           <input type="text" onchange={this.AudioNameChange} 
-                                                                           className="form-control" value={user.audioName}></input> 
+                                                                        <td style={{ minWidth: "190px" }}>
+                                                                            <button value={user.audioName} onClick={this.handleChangeAudioName}
+                                                                                className="btn btn-default" >{user.audioName}</button>
                                                                         </td>
                                                                     </tr>
                                                                 ))}
@@ -382,7 +517,7 @@ export default class BioUsersComponent extends React.Component {
                                 <form onSubmit={e => e.preventDefault()} className="col-md-12">
                                     <Modal.Body className="modal-body">
                                         <div className="form-group modal-content">
-                                            <table className="table display nowrap table-striped table-bordered scroll-horizontal">
+                                            <table className="">
                                                 <thead>
                                                     <tr>
                                                         <th>Line Name</th>
@@ -394,22 +529,27 @@ export default class BioUsersComponent extends React.Component {
                                                 </thead>
                                                 <tbody>
                                                     {
-                                                        this.state.Trainings.map(items => (
+                                                        this.state.Trainings.map((row, index) => (
                                                             <tr>
-                                                                <td>{items.lineName}</td>
-                                                                <td>{items.trgName}</td>
-                                                                <td>{items.enabled === 1 ?
-                                                                    <input type="checkbox" checked></input>
-                                                                    : <input type="checkbox"></input>
+                                                                <td>{this.state.Trainings[index].lineName}</td>
+                                                                <td>{this.state.Trainings[index].trgName}</td>
+                                                                <td>{this.state.Trainings[index].enabled === 1 ?
+                                                                    <input type="checkbox" value={this.state.Trainings[index].enabled}
+                                                                        onChange={e => this.changeExpiryDate(index, 'enabled', e.target.value)} checked></input>
+                                                                    : <input type="checkbox" value={this.state.Trainings[index].enabled}
+                                                                        onChange={e => this.changeExpiryDate(index, 'enabled', e.target.value)}></input>
                                                                 }</td>
                                                                 <td>
                                                                     <DatePicker className="form-control"
                                                                         dateFormat="dd-MM-yyyy"
-                                                                        selected={new Date()}
-                                                                        showPopperArrow={false}
-                                                                        onChange={this.changeExpiryDate} />
+
+                                                                        selected={Date.parse(this.state.Trainings[index].expDate)}
+                                                                        showPopperArrow={true}
+                                                                        // onchange={this.onExpDateChange}
+                                                                        onChange={e => this.changeExpiryDate(index, 'expDate', e)}
+                                                                    />
                                                                 </td>
-                                                                <td>{items.expiryDayCount}</td>
+                                                                <td>{this.state.Trainings[index].expiryDayCount}</td>
                                                             </tr>
                                                         ))
                                                     }
@@ -417,12 +557,12 @@ export default class BioUsersComponent extends React.Component {
                                             </table>
                                         </div>
                                         <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
-                                            <span className="text-bold-600">Done!</span> You successfully Acknowledged.
+                                            <span className="text-bold-600">Done!</span>  {this.state.Message}
                                         </div>
                                     </Modal.Body>
                                     <Modal.Footer className="modal-footer">
                                         <Button variant="secondary" onClick={this.closeTrainingModal}> Close </Button>
-                                        <Button type="Submit" onClick={() => this.handleSubmitAllAck()} variant="secondary"> Submit </Button>
+                                        <Button type="Submit" onClick={() => this.handleUpdateTraingDetails()} variant="secondary"> Update </Button>
                                     </Modal.Footer>
                                 </form>
                             </Modal>
@@ -441,19 +581,21 @@ export default class BioUsersComponent extends React.Component {
                                                     <tr>
                                                         <th>Line Name</th>
                                                         <th>Enabled</th>
-
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {
-                                                        this.state.LineAssociate.map(items => (
+                                                        this.state.LineAssociate.map((row, index) => (
                                                             <tr>
-                                                                <td>{items.lineName}</td>
-                                                                <td>{items.enabled == true ?
-                                                                    <input type="checkbox" value={items.lineId} defaultChecked={this.state.LAssociatechecked}
-                                                                     onClick={this.LineAssociateChange} checked></input>
-                                                                    : <input type="checkbox" value={items.lineId} defaultChecked={this.state.LAssociatechecked} 
-                                                                    onClick={this.LineAssociateChange} style={{backgroundColor:"red"}} ></input>
+                                                                <td>{this.state.LineAssociate[index].lineName}</td>
+                                                                <td>{this.state.LineAssociate[index].enabled == true ?
+                                                                    <input type="checkbox" value={this.state.LineAssociate[index].enabled}
+                                                                        onChange={e => this.LineAssociateChange(index, 'enabled', e.target.value)} checked>
+                                                                    </input>
+                                                                    : <input type="checkbox" value={this.state.LineAssociate[index].enabled}
+                                                                        onChange={e => this.LineAssociateChange(index, 'enabled', e.target.value)}
+                                                                        style={{ backgroundColor: "red" }} >
+                                                                    </input>
                                                                 }</td>
 
                                                             </tr>
@@ -463,12 +605,12 @@ export default class BioUsersComponent extends React.Component {
                                             </table>
                                         </div>
                                         <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
-                                            <span className="text-bold-600">Done!</span> You successfully Acknowledged.
+                                            <span className="text-bold-600">Done!</span>{this.state.Message}
                                         </div>
                                     </Modal.Body>
                                     <Modal.Footer className="modal-footer">
                                         <Button variant="secondary" onClick={this.closeLineAssociateModal}> Close </Button>
-                                        <Button type="Submit" onClick={() => this.handleSaveLineAssociate()} variant="secondary"> Submit </Button>
+                                        <Button type="Submit" onClick={() => this.handleSaveLineAssociate()} variant="secondary"> Update </Button>
                                     </Modal.Footer>
                                 </form>
                             </Modal>
@@ -481,17 +623,80 @@ export default class BioUsersComponent extends React.Component {
                                 </Modal.Header>
                                 <form onSubmit={e => e.preventDefault()} className="col-md-12">
                                     <Modal.Body className="modal-body">
-                                       
+
                                         <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
                                             <span className="text-bold-600">Done!</span> PIN Reset successfully.
                                         </div>
                                     </Modal.Body>
                                     <Modal.Footer className="modal-footer">
                                         <Button variant="secondary" onClick={this.closePINChangeModal}> Close </Button>
-                                        <Button type="Submit" onClick={() => this.ReSetUserHMIPIN()} variant="secondary"> Submit </Button>
+                                        <Button type="Submit" onClick={() => this.ReSetUserHMIPIN()} variant="secondary"> Yes </Button>
                                     </Modal.Footer>
                                 </form>
                             </Modal>
+                            <Modal className="modal-dialog modal-lg" style={{ width: "900px" }}
+                                show={this.state.isAudioChangeOpen} onHide={this.closeAudioChangeModal}>
+                                <Modal.Header closeButton className="modal-header bg-danger white">
+                                    <Modal.Title >
+                                        <h4 className="" id="myModalLabel10">Change User Audio Name </h4>
+                                    </Modal.Title>
+                                </Modal.Header>
+                                <form onSubmit={e => e.preventDefault()} className="col-md-12">
+                                    <Modal.Body className="modal-body">
+                                        <div >
+                                            <h4>Please Enter Audio Name to Change</h4>
+                                            <div className="form-group">
+                                                <input type="text" value={this.state.AudioName}
+                                                    onChange={e => this.setState({ AudioName: e.target.value })} placeholder="Remarks" minLength="6" className="form-control" required></input>
+                                            </div>
+                                        </div>
+                                        <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
+                                            <span className="text-bold-600">Done!</span> Audio Name Changed successfully.
+                                        </div>
+                                    </Modal.Body>
+                                    <Modal.Footer className="modal-footer">
+                                        <Button variant="secondary" onClick={this.closeAudioChangeModal}> Close </Button>
+                                        <Button type="Submit" onClick={() => this.handleUpdateAudioName()} variant="secondary"> Submit </Button>
+                                    </Modal.Footer>
+                                </form>
+                            </Modal>
+                            <Modal className="modal-dialog modal-lg"
+                                show={this.state.isLinkAdminChangeOpen} onHide={this.closeLinkAdminModal}>
+                                <Modal.Header closeButton className="modal-header bg-danger white">
+                                    <Modal.Title >
+                                        <h4 className="" id="myModalLabel10">Link Admin to User </h4>
+                                    </Modal.Title>
+                                </Modal.Header>
+                                <form onSubmit={e => e.preventDefault()} className="col-md-12">
+                                    <Modal.Body className="modal-body">
+                                        <div >
+                                            <h4>Please Select Admin User to Link</h4>
+                                            <div className="form-group">
+                                                <select type="text" onChange={this.changeAdminUser}
+                                                defaultValue={this.state.selectValue}
+                                                className="form-control" required>
+                                                    <option>--Select User--</option>
+                                                    {
+                                                        this.state.AdminUsers.map(user => (
+                                                            <option onChange={this.changeAdminUser} value={user.userID}>
+                                                                {user.firstName}</option>
+                                                        ))
+                                                    }
+                                                </select>
+
+                                            </div>
+                                        </div>
+                                        <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
+                                            <span className="text-bold-600"></span> {this.state.Message}
+                                        </div>
+                                    </Modal.Body>
+                                    <Modal.Footer className="modal-footer">
+                                        <Button variant="secondary" onClick={this.closeLinkAdminModal}> Close </Button>
+                                        <Button type="Submit" onClick={() => this.handleSaveLinkAdmin()} variant="secondary"> Submit </Button>
+                                    </Modal.Footer>
+                                </form>
+                            </Modal>
+
                         </div>
                     </div>
                 </div>

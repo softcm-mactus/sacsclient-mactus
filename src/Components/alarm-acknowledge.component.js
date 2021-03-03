@@ -54,7 +54,7 @@ export default class AlarmHistory extends React.Component {
     }
 
     handleSubmitAllAck = async (event) => {
-        SACSDataServices.SaveAlarmAllAckkowledgement(this.state.Remarks, "ADMIN123").then(response => {
+        SACSDataServices.SaveAlarmAllAckkowledgement(this.state.Remarks, localStorage.getItem('UserId')).then(response => {
             if (response.data == true) {
                 this.retriveAlarmHistoryData();
                 this.setState({
@@ -67,7 +67,7 @@ export default class AlarmHistory extends React.Component {
         });
     }
     handleSubmitSingleAck = async () => {
-        SACSDataServices.SaveAlarmSingleAckkowledgement(this.state.Id, this.state.Remarks, "ADMIN123").then(response => {
+        SACSDataServices.SaveAlarmSingleAckkowledgement(this.state.Id, this.state.Remarks, localStorage.getItem('UserId')).then(response => {
 
             if (response.data == true) {
                 this.retriveAlarmHistoryData();

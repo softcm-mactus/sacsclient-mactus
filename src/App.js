@@ -1,5 +1,5 @@
 //import logo from './app-assets/images/logo/stack-logo-light.png';
-import { Route, Link, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 // import io from 'socket.io';
 //import './App.css';
 //const feather = require('feather-icons')
@@ -30,7 +30,7 @@ import './app-assets/fonts/meteocons/style.min.css';
 import './app-assets/css/pages/users.css';
 
 import './assets/css/style.css';
-
+// import "../node_modules/react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 //import ReactDOM from 'react-dom';
 
 //import './app-assets/vendors/js/vendors.min.js';
@@ -59,12 +59,17 @@ import DashboardComponent from './Components/dashboard.component';
 import MenuComponent from './Components/menu.component';
 import LoginComponent from './Components/Login.Component';
 import OrderComponent from './Components/test.component';
+import Test2 from './Components/test2';
+
 import AlarmComponent from './Components/alarm-history.component';
 import SiteConfig from "./Components/site.config.component";
 import BioUsers from "./Components/biousers.admin.component";
 import AlarmAck from "./Components/alarm-acknowledge.component";
 import DiscrAck from "./Components/discr.acknow.component";
 import AdminUserMngt from "./Components/add.adminuser.component";
+import VoiceMessageConfig from './Components/voiceMessageconfig.component';
+import StdMessage from './Components/sendvoice.message.component';
+
 
 //Reports
 import AuditReport from "./Components/Reports/auditrail.component";
@@ -73,59 +78,30 @@ import VisitorsReport from "./Components/Reports/visitors.report.component";
 import EntryExitReport from "./Components/Reports/entryexit.report.component";
 import LineConfiguration from "./Components/lineconfiguration.component";
 import CheckListConfig from "./Components/checkList.component";
-// Socket IO Start
-// const express = require("express");
-// const http = require("http");
-// const socketIo = require("socket.io");
+import IdleTimeOut from "./Components/idetime.component";
+import DiscrepancyReport  from "./Components/Reports/discrepancy.report.component";
+import UserEntryExitReport  from "./Components/Reports/users.entryexit.report.component";
+import AlarmReport  from "./Components/Reports/alarm.summary.report";
+import DiscLineReport from './Components/Reports/Discrepancy.linereport';
+import EventReport from "./Components/Reports/event.report";
+import LineEvent from "./Components/Reports/eventline.report";
 
-// const port = process.env.PORT || 4001;
-// const index = require("./index");
 
-// const app = express();
-// app.use(index);
-
-// const server = http.createServer(app);
-
-// const io = socketIo(server);
-
-// let interval;
-
-// io.on("connection", (socket) => {
-//   console.log("New client connected");
-//   if (interval) {
-//     clearInterval(interval);
-//   }
-//   interval = setInterval(() => getApiAndEmit(socket), 1000);
-//   socket.on("disconnect", () => {
-//     console.log("Client disconnected");
-//     clearInterval(interval);
-//   });
-// });
-
-// const getApiAndEmit = socket => {
-//   const response = new Date();
-//   // Emitting a new message. Will be consumed by the client
-//   socket.emit("FromAPI", response);
-// };
-
-// server.listen(port, () => console.log(`Listening on port ${port}`));
-
- //Socket IO Stop
-
+ 
 function App() {
-
+  
   return (
 
     <div className="horizontal-layout horizontal-menu 2-columns " data-open="hover" data-menu="horizontal-menu" data-col="2-columns">
       <HeaderComponent></HeaderComponent>
-      {/* <CurrenInUsers></CurrenInUsers>
-      <GetBioreaders></GetBioreaders> */}
-      <MenuComponent></MenuComponent>
-      {/* <DashboardComponent></DashboardComponent> */}
+      <IdleTimeOut></IdleTimeOut>      
+      <MenuComponent></MenuComponent>    
+       
       <div className="">
+     
         <Switch>
           <Route exact path={["/", "/Dashboard"]} component={DashboardComponent} />
-          <Route exact path={["/Dashboard"]} component={DashboardComponent} />
+          <Route exact path={["/"]} component={DashboardComponent} />
           <Route exact path={["/Alarm"]} component={AlarmComponent} ></Route>
           <Route exact path={["/BioUsers"]} component={BioUsers}></Route>
           <Route exact path={["/SiteConfig"]} component={SiteConfig}></Route>
@@ -140,9 +116,19 @@ function App() {
           <Route exact path={["/EntryExitReport"]} component={EntryExitReport}></Route>
           <Route exact path={["/LineConfig"]} component={LineConfiguration}></Route>
           <Route exact path={["/CheckListConfig"]} component={CheckListConfig}></Route>
-        
+          <Route exact path={["/VoiceConfig"]} component={VoiceMessageConfig}></Route>
+          <Route exact path={["/DiscReport"]} component={DiscrepancyReport}></Route>
+          <Route exact path={["/UserEntryExit"]} component={UserEntryExitReport}></Route>
+          <Route exact path={["/AlarmReport"]} component={AlarmReport}></Route>
+          <Route exact path={["/DiscLineReport"]} component={DiscLineReport}></Route>
+          <Route exact path={["/EventReport"]} component={EventReport}></Route>
+          <Route exact path={["/LineEvent"]} component={LineEvent}></Route>
+          <Route exact path={["/StdMessage"]} component={StdMessage}></Route>
+
+
           <Route exact path={["/test"]} component={OrderComponent} ></Route>
-          
+          <Route exact path={["/test2"]} component={Test2} ></Route>
+
           {/* <Route path="/tutorials/:id" component={Tutorial} /> */}
         </Switch>
       </div>

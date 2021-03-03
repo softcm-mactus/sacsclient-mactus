@@ -2,10 +2,10 @@
 import React, { Component } from "react";
 import SACSDataServices from "../Services/sacs.services";
 import clientlogo from '../app-assets/images/icons/cmp-logo.png';
-import 'svg2pdf.js'
-
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+// import { Canvas } from "@react-pdf/renderer";
+// import html2canvas from "html2canvas";
 class OrderComponent extends Component {
   constructor(props) {
     super(props)
@@ -69,7 +69,9 @@ class OrderComponent extends Component {
       // }
       // return body
     }
-
+    
+    //var imgData;
+    //doc.addImage(imgSampleData, 'PNG', 10, 10);
     doc.autoTable({
       html: '#my-table',
       theme: 'grid',
@@ -84,7 +86,8 @@ class OrderComponent extends Component {
         // Header
         doc.setFontSize(20)
         doc.setTextColor(40)
-
+        var imgSampleData ='data:cmp-logo/​png;base64,/9j/4AAQSkZJRgABAAEA8ADwAAD/2w'; 
+        doc.addImage(imgSampleData,'PNG', data.settings.margin.left, 33443150, 10, 10)
         // doc.addImage("D:\Sources\SACSCLIENT\sacsclient-mactus\src\app-assets\images\avatar.jpg", 'JPEG', data.settings.margin.left, 15, 10, 10)
         doc.autoTable({
           html: '#tblHeader',
@@ -128,7 +131,7 @@ class OrderComponent extends Component {
   render() {
     return (
       <div>
-        <button onClick={this.generatePDF} type="primary">Download PDF</button>
+        <button onClick={this.generatePDF} id="img1" type="primary">Download PDF</button>
         {/* <table id="tblHeader" style={{paddingBottom:"20px"}}>
            <thead>
             <tr>
@@ -154,7 +157,7 @@ class OrderComponent extends Component {
         </table> */}
         <table id="tblHeader" className="table display nowrap table-striped table-bordered scroll-horizontal">         
           <tr>
-          <td rowspan="2" ><img src={clientlogo}></img> <br></br>
+          <td rowspan="2" ><img alt="logo" src={clientlogo}></img> <br></br>
           <h1>Sunpharma Halol</h1>
           </td>          
             <td><h3>Smart Access Control Solution</h3></td>

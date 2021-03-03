@@ -46,7 +46,7 @@ export default class AlarmHistory extends React.Component {
     }
 
     handleSubmitSingleAck = async () => {
-        SACSDataServices.SaveDesrepancyAcknowledgement(this.state.Id, this.state.Remarks, "ADMIN123").then(response => {
+        SACSDataServices.SaveDesrepancyAcknowledgement(this.state.Id, this.state.Remarks, localStorage.getItem('UserId')).then(response => {
             //alert(response.data);
             if (response.data == true) {
                 this.retrivePendingDesrepancy();

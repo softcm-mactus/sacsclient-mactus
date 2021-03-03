@@ -140,36 +140,45 @@ export default class AdminUserManagement extends React.Component {
         e.preventDefault();
     }
     ValicateUsers = () => {       
+        //alert(this.state.UserID)
         if (!this.state.UserID) {
             this.setState({ UserIDError: "User Id Required" })
             return false;
         }
         else
             this.setState({ UserIDError: "" })
+           // alert(this.state.FirstName)
+
         if (!this.state.FirstName) {
             this.setState({ FirstNameerror: "User First Name Required" })
             return false;
         }
         else
             this.setState({ FirstNameerror: "" })
+           // alert(this.state.LastName)
+
         if (!this.state.LastName) {
             this.setState({ LastNameerror: "User Last Name Required" })
             return false;
         }
         else
             this.setState({ LastNameerror: "" })
+           // alert(this.state.DeptId)
+
         if (this.state.DeptId < 0 || !this.state.DeptId) {
             this.setState({ Depterror: "Please select User Department" })
             return false;
         }
         else
             this.setState({ Depterror: "" })
+           // alert(this.state.RoleId)
         if (this.state.RoleId < 0 || !this.state.RoleId) {
             this.setState({ Roleerror: "Please select User Role" })
             return false;
         }
         else
             this.setState({ Roleerror: "" })
+           // alert(this.state.Status)
         if (this.state.Status < 0 || !this.state.Status) {
             this.setState({ Stateerror: "Please select User Status" })
             return false;

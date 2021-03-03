@@ -11,7 +11,9 @@ export default class SiteConfigCompoenet extends React.Component {
         this.state = {
             PlantConfig: [],
             Message: '',
-            CheckBox1: "checked"
+            CheckBox1: "checked",
+            Alerts: "",
+            Message: ""
         }
     }
 
@@ -33,9 +35,9 @@ export default class SiteConfigCompoenet extends React.Component {
         const newState = this.state.PlantConfig.map((item, i) => {
             if (i === index) {
                 if (dataType === "checkbox1") {
-                    if (value == 1)
+                    if (value === 1)
                         value = 0;
-                    else if (value == 0)
+                    else if (value === 0)
                         value = 1;
                     // alert(value)
                 }
@@ -47,8 +49,6 @@ export default class SiteConfigCompoenet extends React.Component {
         this.setState({
             PlantConfig: newState
         });
-
-
     }
     retriveAllSiteConfigurations() {
 
@@ -63,9 +63,16 @@ export default class SiteConfigCompoenet extends React.Component {
     }
     handleSubmit = () => {
 
-        SACSDataServices.UpdatePlantConfiguration(this.state.PlantConfig,"Admin123").then(response => {
+        SACSDataServices.UpdatePlantConfiguration(this.state.PlantConfig, localStorage.getItem('UserId')).then(response => {
+            if (response.data !== null) {
+                this.setState({
+                    Alerts: "",
+                    Message: "Site configuration details updated succesfully"
+
+                })
+            }
             this.retriveAllSiteConfigurations();
-            console.log(response.data);
+
         }).catch(e => {
             console.log(e);
         });
@@ -84,7 +91,7 @@ export default class SiteConfigCompoenet extends React.Component {
                     </div>
                     <div className="content-body">
                         <div className="row justify-content-md-center">
-                            <div className="col-md-12">
+                            <div className="col-md-12" >
                                 <div className="card">
                                     <div className="card-header">
                                         <a className="heading-elements-toggle"><i className="fa fa-ellipsis-v font-medium-3"></i></a>
@@ -99,8 +106,8 @@ export default class SiteConfigCompoenet extends React.Component {
                                     </div>
                                     <form onSubmit={e => e.preventDefault()}>
                                         <div className="card-content collpase show">
-                                            <div className="card-body table-responsive" style={{ maxHeight: "650px" }}>
-                                                <table className="table display nowrap table-striped ">
+                                            <div className="card-body table-responsive" style={{ maxHeight: "450px" }}>
+                                                <table className="table display nowrap table-striped " style={{ maxHeight: "550px" }, { overflow: "auto" }}>
                                                     <thead>
                                                         <tr>
                                                             <th><h4> Parameter Description</h4></th>
@@ -137,8 +144,8 @@ export default class SiteConfigCompoenet extends React.Component {
                                                                                     }
                                                                                     {
                                                                                         this.state.PlantConfig[index].type === 2 ?
-                                                                                            <input type="number" min="0" max="1"  value={this.state.PlantConfig[index].value} className="form-control"
-                                                                                            onChange={e => this.handleInputChange(index, 'value', e.target.value)} required ></input>
+                                                                                            <input type="number" min="0" max="1" value={this.state.PlantConfig[index].value} className="form-control"
+                                                                                                onChange={e => this.handleInputChange(index, 'value', e.target.value)} required ></input>
                                                                                             : ""
 
                                                                                         // this.state.PlantConfig[index].value == 1 ?
@@ -157,15 +164,18 @@ export default class SiteConfigCompoenet extends React.Component {
                                                             ))}
                                                     </tbody>
                                                 </table>
-                                                <div className="form-actions center text-center">
-                                                    <button type="button" className="btn btn-warning mr-1">
-                                                        <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>  Cancel
-                                                </button>
-                                                    <button className="btn btn-primary" type="submit" onClick={this.handleSubmit}>
-                                                        <FontAwesomeIcon icon={faCheck}></FontAwesomeIcon>  Save
-                                                </button>
-                                                </div>
+
                                             </div>
+                                        </div>
+
+                                        <div className="form-actions center text-center">
+                                            <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
+                                                <span className="text-bold-600"></span> {this.state.Message}
+                                            </div>
+                                            <button type="button" className="btn btn-warning mr-1">
+                                                <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>Cancel</button>
+                                            <button className="btn btn-primary" type="submit" onClick={this.handleSubmit}>
+                                                <FontAwesomeIcon icon={faCheck}></FontAwesomeIcon>Save</button>
                                         </div>
                                     </form>
                                 </div>

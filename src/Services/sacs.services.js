@@ -15,6 +15,16 @@ class SACSDataServices {
     GetAdminUserByUserId(UserId) {
         return http.get(`/Users/GetAdminUserByUserId/${UserId}`);
     }
+    UpdateUserAudioName(UserId, AudioName){
+        return http.post(`/Users/UpdateUserAudioName/${UserId},${AudioName}`);
+    }
+    UpdateUserLineAssociate(data){
+        return http.post(`/Users/UpdateUserLineAssociate/`,data);
+    }
+    
+    UpdateUserTrainingdetails(data){
+        return http.post("/Users/UpdateUserTrainingdetails/",data);
+    }
     // GetAllUsersByLineId(lineID){
     //     return http.get("/dashboard/GetAllUsersByLineId",{lineID});
     // }
@@ -42,9 +52,12 @@ class SACSDataServices {
         return http.get("/dashboard/GetAllPLCStatus");
     }
     CheckUserskLogin(data) {
-
-        return http.post("/Auth/CheckUserskLogin/", data).catch(e => {
-            console.log(e);
+        return http.post("/Login/Authenticate/", data).catch(e => {            
+        });
+    }
+    CheckUserLoginError(data){
+       // alert(JSON.stringify(data) )
+        return http.post("/Home/CheckUserLoginError/", data).catch(e => {          
         });
     }
     UpdateUIConfiguration(lineid) {
@@ -69,8 +82,8 @@ class SACSDataServices {
         //alert("hi");
         return http.get("/Reports/GetAllAlarmSummary/");
     }
-    GetAllAlarmSummaryByLineID(lineid) {
-        return http.get(`/Reports/GetAllAlarmSummaryByLineID/${lineid}`);
+    GetAllAlarmSummaryByLineID(fromdate, todate, lineid) {
+        return http.get(`/Reports/GetAllAlarmSummaryByLineID/${fromdate}, ${todate},${lineid}`);
     }
 
     //Configurations
@@ -92,13 +105,26 @@ class SACSDataServices {
         return http.get(`/Configuration/GetAllHealthCheckLisById/${Id}`)
     }
     GetLineConfigurationByLineId(LineId) {
-
         return http.get(`/Configuration/GetLineConfigurationByLineId/${LineId}`);
     }
-    UpdateCheckList(data) {
-        return http.get('/Configuration/UpdateCheckList',data);
+    UpdateCheckList(data) {      
+        return http.post('/Configuration/UpdateCheckList/',data);
     }
-
+    GetAllConfiguredVoiceMessages(){
+        return http.get(`/Configuration/GetAllConfiguredVoiceMessages/`);
+    }
+    GetAllStandardMessages(){
+        return http.get(`/Configuration/GetAllStandardMessages/`);
+    }
+    GetAllFillingLineUsers(LineId){
+        return http.get(`/Configuration/GetAllFillingLineUsers/${LineId}`);
+    }
+    SaveStdVoiceMessages(LineId, UserName, VoiceMessage){
+        return http.post(`/Configuration/SaveStdVoiceMessages/${LineId}, ${UserName}, ${VoiceMessage}`);
+    }
+    GetActiveMessageCount(){
+        return http.get(`/Configuration/GetActiveMessageCount`);
+    }
 
     GetAllPendingAlarms() {
         return http.get("/Reports/GetAllPendingAlarms");
@@ -128,6 +154,21 @@ class SACSDataServices {
         return http.get(`Reports/GetEntryExitReportByDate/${fromdate},${todate},${LineId}`);
     }
 
+    GetDiscrepancyReportByDate(fromdate, todate,UserId){              
+        return http.get(`Reports/GetDiscrepancyReportByDate/${fromdate},${todate},${UserId}`);
+    }
+    GetUsersEntryExitReportByDate(fromdate, todate,UserId){
+        return http.get(`Reports/GetUsersEntryExitReportByDate/${fromdate},${todate},${UserId}`);
+    }
+    GetLineDiscrepancyReportByDate(fromdate, todate){
+        return http.get(`Reports/GetLineDiscrepancyReportByDate/${fromdate},${todate}`);
+    }
+    GetEventReportByDate(fromdate, todate,UserId){
+        return http.get(`Reports/GetEventReportByDate/${fromdate},${todate},${UserId}`);
+    }
+    GetEventLineReportByDate(fromdate, todate,LineId){
+        return http.get(`Reports/GetEventLineReportByDate/${fromdate},${todate},${LineId}`);
+    }
     //User management strat
     GetAllDepartments() {
         return http.get("/Users/GetAllDepartments")
@@ -165,6 +206,21 @@ class SACSDataServices {
     }
     GetAllAdminUsers() {
         return http.get("/Users/GetAllAdminUsers")
+    }
+    GetAllActiveAdminUsers(){
+        return http.get("/Users/GetAllActiveAdminUsers")
+    }
+    SaveLinkAdmin(UserId,  AdminId){
+        return http.post(`/Users/SaveLinkAdmin/${UserId}, ${AdminId}`)
+    }
+    GetHMICheckListAssociation(){
+        return http.get(`/Configuration/GetHMICheckListAssociation/`)
+    }
+    SaveHMICheckListAssociation(data){
+        return http.post(`/Configuration/SaveHMICheckListAssociation/`, data)
+    }
+    GetAllBioUsersName(){
+        return http.get(`/Users/GetAllBioUsersName/`);
     }
 }
 export default new SACSDataServices();
