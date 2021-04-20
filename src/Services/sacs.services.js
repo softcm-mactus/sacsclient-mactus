@@ -1,46 +1,31 @@
-import http from "../http-common";
+import http from "../Helper/http-common";
 
 class SACSDataServices {
-    // App Header
+    //#region  Header
     GetAppHeaderdetails() {
         return http.get("/home/GetAppHeaderdetails");
     }
+    //#endregion Header 
 
-    // Menu
-
-    // Dashboard
-    GetAllCurrentInUsers() {
-        return http.get("/dashboard/GetAllCurrentInUsers");
+    //#region Dashboard    
+   async GetAllCurrentInUsers() {
+        return await http.get("/dashboard/GetAllCurrentInUsers");
     }
-    GetAdminUserByUserId(UserId) {
-        return http.get(`/Users/GetAdminUserByUserId/${UserId}`);
-    }
-    UpdateUserAudioName(UserId, AudioName){
-        return http.post(`/Users/UpdateUserAudioName/${UserId},${AudioName}`);
-    }
-    UpdateUserLineAssociate(data){
-        return http.post(`/Users/UpdateUserLineAssociate/`,data);
-    }
-    
-    UpdateUserTrainingdetails(data){
-        return http.post("/Users/UpdateUserTrainingdetails/",data);
-    }
-    // GetAllUsersByLineId(lineID){
-    //     return http.get("/dashboard/GetAllUsersByLineId",{lineID});
-    // }
-    GetBioReaders() {
-        return http.get("/dashboard/GetBioReaders");
+    async GetBioReaders() {
+        return await http.get("/dashboard/GetBioReaders");
     }
     SaveCommand(cmdId, UserId, Remarks) {
-
         return http.post(`/dashboard/SaveCommand/${cmdId},${UserId},${Remarks}`);
     }
-
+    ValidateCommand(cmdId, UserId, Remarks) {
+        //alert(Remarks)
+        return http.post(`/dashboard/ValidateCommand/${cmdId},${UserId},${Remarks}`);
+    }
     GetALlLines() {
         return http.get("/dashboard/GetALlLines");
     }
-    GetAllUsersByLineId(lineid) {
-        return http.get(`/Dashboard/GetAllUsersByLineId/${lineid}`);
+    async GetAllUsersByLineId(lineid) {
+        return await http.get(`/Dashboard/GetAllUsersByLineId/${lineid}`);
     }
     GetAllHMIStatus() {
         return http.get("/dashboard/GetAllHMIStatus");
@@ -50,15 +35,6 @@ class SACSDataServices {
     }
     GetAllPLCStatus() {
         return http.get("/dashboard/GetAllPLCStatus");
-    }
-    CheckUserskLogin(data) {
-        return http.post("/Login/Authenticate/", data).catch(e => {            
-        });
-    }
-    CheckUserLoginError(data){
-       // alert(JSON.stringify(data) )
-        return http.post("/Home/CheckUserLoginError/", data).catch(e => {          
-        });
     }
     UpdateUIConfiguration(lineid) {
         return http.get(`/dashboard/UpdateUIConfiguration/${lineid}`);
@@ -75,18 +51,20 @@ class SACSDataServices {
     GetDashboardAlert() {
         return http.get('/Dashboard/GetDashboardAlert');
     }
-    
+    //#endregion Dashboard
 
-    //Report
-    GetAllAlarmSummary() {
-        //alert("hi");
-        return http.get("/Reports/GetAllAlarmSummary/");
+    //#region Login
+    CheckUserskLogin(data) {
+        return http.post("/Login/Authenticate/", data).catch(e => {
+        });
     }
-    GetAllAlarmSummaryByLineID(fromdate, todate, lineid) {
-        return http.get(`/Reports/GetAllAlarmSummaryByLineID/${fromdate}, ${todate},${lineid}`);
+    CheckUserLoginError(data) {
+        return http.post("/Home/CheckUserLoginError/", data).catch(e => {
+        });
     }
+    //#endregion Login
 
-    //Configurations
+    //#region  Configurations
     GetAllSiteConfiguration() {
         return http.get("/Configuration/GetAllSiteConfiguration/");
     }
@@ -107,25 +85,33 @@ class SACSDataServices {
     GetLineConfigurationByLineId(LineId) {
         return http.get(`/Configuration/GetLineConfigurationByLineId/${LineId}`);
     }
-    UpdateCheckList(data) {      
-        return http.post('/Configuration/UpdateCheckList/',data);
+    UpdateCheckList(data) {
+        return http.post('/Configuration/UpdateCheckList/', data);
     }
-    GetAllConfiguredVoiceMessages(){
+    GetAllConfiguredVoiceMessages() {
         return http.get(`/Configuration/GetAllConfiguredVoiceMessages/`);
     }
-    GetAllStandardMessages(){
+    GetAllStandardMessages() {
         return http.get(`/Configuration/GetAllStandardMessages/`);
     }
-    GetAllFillingLineUsers(LineId){
+    GetAllFillingLineUsers(LineId) {
         return http.get(`/Configuration/GetAllFillingLineUsers/${LineId}`);
     }
-    SaveStdVoiceMessages(LineId, UserName, VoiceMessage){
+    SaveStdVoiceMessages(LineId, UserName, VoiceMessage) {
         return http.post(`/Configuration/SaveStdVoiceMessages/${LineId}, ${UserName}, ${VoiceMessage}`);
     }
-    GetActiveMessageCount(){
+    GetActiveMessageCount() {
         return http.get(`/Configuration/GetActiveMessageCount`);
     }
+    GetHMICheckListAssociation() {
+        return http.get(`/Configuration/GetHMICheckListAssociation/`)
+    }
+    SaveHMICheckListAssociation(data) {
+        return http.post(`/Configuration/UpdateHMICheckListAssociation/`, data)
+    }
+    //#endregion Configurations 
 
+    //#region Reports
     GetAllPendingAlarms() {
         return http.get("/Reports/GetAllPendingAlarms");
     }
@@ -153,23 +139,30 @@ class SACSDataServices {
     GetEntryExitReportByDate(fromdate, todate, LineId) {
         return http.get(`Reports/GetEntryExitReportByDate/${fromdate},${todate},${LineId}`);
     }
-
-    GetDiscrepancyReportByDate(fromdate, todate,UserId){              
+    GetDiscrepancyReportByDate(fromdate, todate, UserId) {
         return http.get(`Reports/GetDiscrepancyReportByDate/${fromdate},${todate},${UserId}`);
     }
-    GetUsersEntryExitReportByDate(fromdate, todate,UserId){
+    GetUsersEntryExitReportByDate(fromdate, todate, UserId) {
         return http.get(`Reports/GetUsersEntryExitReportByDate/${fromdate},${todate},${UserId}`);
     }
-    GetLineDiscrepancyReportByDate(fromdate, todate){
+    GetLineDiscrepancyReportByDate(fromdate, todate) {
         return http.get(`Reports/GetLineDiscrepancyReportByDate/${fromdate},${todate}`);
     }
-    GetEventReportByDate(fromdate, todate,UserId){
+    GetEventReportByDate(fromdate, todate, UserId) {
         return http.get(`Reports/GetEventReportByDate/${fromdate},${todate},${UserId}`);
     }
-    GetEventLineReportByDate(fromdate, todate,LineId){
+    GetEventLineReportByDate(fromdate, todate, LineId) {
         return http.get(`Reports/GetEventLineReportByDate/${fromdate},${todate},${LineId}`);
     }
-    //User management strat
+    GetAllAlarmSummary() {
+        return http.get("/Reports/GetAllAlarmSummary/");
+    }
+    GetAllAlarmSummaryByLineID(fromdate, todate, lineid) {
+        return http.get(`/Reports/GetAllAlarmSummaryByLineID/${fromdate}, ${todate},${lineid}`);
+    }
+    //#endregion Reports
+
+    //#region Users management
     GetAllDepartments() {
         return http.get("/Users/GetAllDepartments")
     }
@@ -201,26 +194,33 @@ class SACSDataServices {
         return http.put(`/Users/UpdateUserActiveorInactiveByUserId/${UserId}`);
     }
     SaveAdminUsersDetails(Users, ActionName) {
-        //alert(JSON.stringify (Users))
         return http.post(`/Users/SaveAdminUsersDetails/${ActionName}`, Users)
     }
     GetAllAdminUsers() {
         return http.get("/Users/GetAllAdminUsers")
     }
-    GetAllActiveAdminUsers(){
+    GetAllActiveAdminUsers() {
         return http.get("/Users/GetAllActiveAdminUsers")
     }
-    SaveLinkAdmin(UserId,  AdminId){
+    SaveLinkAdmin(UserId, AdminId) {
         return http.post(`/Users/SaveLinkAdmin/${UserId}, ${AdminId}`)
     }
-    GetHMICheckListAssociation(){
-        return http.get(`/Configuration/GetHMICheckListAssociation/`)
+    GetAdminUserByUserId(UserId) {
+        return http.get(`/Users/GetAdminUserByUserId/${UserId}`);
     }
-    SaveHMICheckListAssociation(data){
-        return http.post(`/Configuration/SaveHMICheckListAssociation/`, data)
+    UpdateUserAudioName(UserId, AudioName) {
+        return http.post(`/Users/UpdateUserAudioName/${UserId},${AudioName}`);
     }
-    GetAllBioUsersName(){
+    UpdateUserLineAssociate(data) {
+        return http.post(`/Users/UpdateUserLineAssociate/`, data);
+    }
+
+    UpdateUserTrainingdetails(data) {
+        return http.post("/Users/UpdateUserTrainingdetails/", data);
+    }
+    GetAllBioUsersName() {
         return http.get(`/Users/GetAllBioUsersName/`);
     }
+    //#endregion Users Management
 }
 export default new SACSDataServices();

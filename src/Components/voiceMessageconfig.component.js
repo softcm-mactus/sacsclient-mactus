@@ -4,7 +4,7 @@ import moment from 'moment';
 import "rc-time-picker/assets/index.css";
 import SACSDataServices from '../Services/sacs.services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faTrashAlt, faTimes, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faTimes, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 export default class VoiceMessageConfig extends React.Component {
     constructor(props) {
@@ -26,6 +26,7 @@ export default class VoiceMessageConfig extends React.Component {
             IsHighPriority: false,
             SelectedLineName: "",
             EnableDelete: "none",
+            LineSelected: false,
         }
     }
     retriveAllLinesDate() {
@@ -44,6 +45,7 @@ export default class VoiceMessageConfig extends React.Component {
 
     retriveAllConfiguredVoiceMesages() {
         SACSDataServices.GetAllConfiguredVoiceMessages().then(response => {
+            alert(JSON.stringify(response.data))
             this.setState({
                 VoiceConfig: response.data
             });
@@ -76,7 +78,6 @@ export default class VoiceMessageConfig extends React.Component {
                 this.setState({
                     LineId: value
                 })
-
             }
             else if (dataType === "voiceTriggerType") {
                 this.setState({
@@ -99,9 +100,8 @@ export default class VoiceMessageConfig extends React.Component {
                 })
             }
             else if (dataType === "isHighPriority") {
-
                 if (value === "false") {
-                    alert(value)
+                    // alert(value)
                     this.setState({
                         IsHighPriority: true
                     })
@@ -111,11 +111,11 @@ export default class VoiceMessageConfig extends React.Component {
                         IsHighPriority: false
                     })
                 }
-                alert(this.state.IsHighPriority)
+                //alert(this.state.IsHighPriority)
             }
             else if (dataType === "used") {
                 if (value === "false") {
-                    alert(value)
+                    //alert(value)
                     this.setState({
                         IsEnabled: true
                     })
@@ -125,20 +125,18 @@ export default class VoiceMessageConfig extends React.Component {
                         IsEnabled: false
                     })
                 }
-                alert(this.state.IsEnabled)
+                //alert(this.state.IsEnabled)
             }
-
-
             var adddata = {
                 id: 0,
-                lineId: this.state.LineId,
+                lineId: Number(this.state.LineId),
                 voiceTriggerType: Number(this.state.AlertType),
                 freqMin: Number(this.state.Frequency),
                 voiceMsg: this.state.VoiceMessage,
                 triggerTime: this.state.TriggerTime,
                 isHighPriority: this.state.IsHighPriority,
                 used: this.state.IsEnabled,
-
+                LineSelected:true,
             }
             this.setState({
                 pushData: adddata
@@ -160,12 +158,13 @@ export default class VoiceMessageConfig extends React.Component {
                 TriggerTime: "",
                 IsHighPriority: false,
                 IsEnabled: false,
+                LineSelected:false,
             })
         }
     }
     deleteNewConfigRow = (index) => {
         var deleted = [...this.state.VoiceConfig]
-        deleted.splice(index,1)
+        deleted.splice(index, 1)
         this.setState({
             VoiceConfig: deleted
         })
@@ -223,7 +222,7 @@ export default class VoiceMessageConfig extends React.Component {
                                                                 <tr>
                                                                     <td>
                                                                         <select id="ddlLines" required
-
+                                                                            selected={this.state.LineSelected}
                                                                             className=" form-control" name="ddlLines"
                                                                             defaultValue={this.state.selectValue}
                                                                             onChange={e => this.handleInputChange(-1, 'lineId', e.target.value)}
@@ -252,6 +251,7 @@ export default class VoiceMessageConfig extends React.Component {
                                                                     <td><TimePicker className="form-control"
                                                                         //defaultValue={moment()} showSecond={false}
                                                                         minuteStep={1}
+                                                                        // value={moment(this.state.Frequency)}
                                                                         disabled={this.state.AlertType == 2 ? true : false}
                                                                         onChange={e => this.handleInputChange(-1, 'freqMin', e)}
                                                                         disabledMinutes={() => [0]}
@@ -260,12 +260,15 @@ export default class VoiceMessageConfig extends React.Component {
                                                                     <td><TimePicker className="form-control"
                                                                         //defaultValue={moment()}
                                                                         disabled={this.state.AlertType == 1 ? true : false}
+                                                                        // value={moment(this.state.TriggerTime)}
+
                                                                         onChange={e => this.handleInputChange(-1, 'triggerTime', e)}
                                                                         checked={this.state.IsEnabled === true ? "checked" : ""}
                                                                         showSecond={false}
                                                                         minuteStep={1} /></td>
 
                                                                     <td><input type="checkbox" value={this.state.IsEnabled}
+                                                                        checked={this.state.IsEnabled === true ? "checked" : ""}
                                                                         onChange={e => this.handleInputChange(-1, 'used', e.target.value)}
                                                                         className="" ></input> </td>
                                                                     <td><input type="checkbox"
@@ -350,7 +353,8 @@ export default class VoiceMessageConfig extends React.Component {
                                                                             onChange={e => this.handleInputChange(index, 'voiceMsg', e.target.value)}
                                                                             placeholder="Please enter Message"
                                                                             className="form-control" required ></input></td>
-                                                                        <td><TimePicker className="form-control"
+                                                                        <td>
+                                                                            <TimePicker className="form-control"
                                                                             //defaultValue={moment(this.state.VoiceConfig[index].freqMin)}
                                                                             onChange={e => this.handleInputChange(index, 'freqMin', e)}
                                                                             value={this.state.VoiceConfig[index].freqMin ?
@@ -367,27 +371,11 @@ export default class VoiceMessageConfig extends React.Component {
                                                                                 //defaultValue={moment()}
                                                                                 onChange={e => this.handleInputChange(index, 'triggerTime', e)}
                                                                                 disabled={this.state.VoiceConfig[index].voiceTriggerType === 1 ? true : false}
-                                                                                value={moment(this.state.VoiceConfig[index].triggerTime)}
+                                                                                value={this.state.VoiceConfig[index].triggerTime!=""?
+                                                                                     moment(this.state.VoiceConfig[index].triggerTime):""}
                                                                                 // this.state.VoiceConfig[index].triggerTime
                                                                                 showSecond={false}
                                                                                 minuteStep={1} />
-                                                                        </td>
-
-                                                                        <td>
-                                                                            {
-                                                                                this.state.VoiceConfig[index].isHighPriority === true ?
-                                                                                    <input type="checkbox"
-                                                                                        value={this.state.VoiceConfig[index].voiceTriggerType === 1 ?
-                                                                                            this.state.VoiceConfig[index].isHighPriority
-                                                                                            : ""
-                                                                                        }
-                                                                                        onChange={e => this.handleInputChange(index, 'isHighPriority', e.target.value)}
-                                                                                        className="" checked></input>
-                                                                                    : <input type="checkbox"
-                                                                                        onChange={e => this.handleInputChange(index, 'isHighPriority', e.target.value)}
-                                                                                        value={this.state.VoiceConfig[index].isHighPriority}
-                                                                                        className="" ></input>
-                                                                            }
                                                                         </td>
                                                                         <td>
                                                                             {
@@ -401,11 +389,25 @@ export default class VoiceMessageConfig extends React.Component {
                                                                             }
                                                                         </td>
                                                                         <td>
+                                                                            {
+                                                                                this.state.VoiceConfig[index].isHighPriority === true ?
+                                                                                    <input type="checkbox"
+                                                                                        value={this.state.VoiceConfig[index].isHighPriority}
+                                                                                        onChange={e => this.handleInputChange(index, 'isHighPriority', e.target.value)}
+                                                                                        className="" checked></input>
+                                                                                    : <input type="checkbox"
+                                                                                        onChange={e => this.handleInputChange(index, 'isHighPriority', e.target.value)}
+                                                                                        value={this.state.VoiceConfig[index].isHighPriority}
+                                                                                        className="" ></input>
+                                                                            }
+                                                                        </td>
+
+                                                                        <td>
                                                                             {this.state.VoiceConfig[index].id === 0 ?
                                                                                 <button type="submit"
-                                                                                onClick={e => this.deleteNewConfigRow(index, 'delete', 0)} onTouchEnd ="Delete"
-                                                                                 className="btn btn-primary"> <FontAwesomeIcon style={{display:"inline-block"}} icon={faTrashAlt}></FontAwesomeIcon>
-                                                                                 </button>
+                                                                                    onClick={e => this.deleteNewConfigRow(index, 'delete', 0)} onTouchEnd="Delete"
+                                                                                    className="btn btn-primary"> <FontAwesomeIcon style={{ display: "inline-block" }} icon={faTrashAlt}></FontAwesomeIcon>
+                                                                                </button>
                                                                                 : ""
                                                                             }
                                                                         </td>
@@ -444,4 +446,4 @@ export default class VoiceMessageConfig extends React.Component {
             </div>
         )
     }
-} 
+}

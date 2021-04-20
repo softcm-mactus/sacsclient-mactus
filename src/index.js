@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from "react-router-dom";
 import './index.css';
 import App from './App';
+import 'react-app-polyfill/ie11';
+import 'react-app-polyfill/stable';
 //import CurrenInUsers from "./Components/curren-in-users.component";
 
 //Socket IO Start

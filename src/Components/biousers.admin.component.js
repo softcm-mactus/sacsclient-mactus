@@ -85,13 +85,11 @@ export default class BioUsersComponent extends React.Component {
                         value = 0;
                     else if (value == 0)
                         value = 1;
-
                 }
                 return { ...item, [dataType]: value };
             }
             return item;
         });
-
         this.setState({
             Trainings: newState
         });
@@ -123,7 +121,6 @@ export default class BioUsersComponent extends React.Component {
                     Message: "User Status Updated Successfully!",
                     ShowMessage: "",
                 });
-
             }
             else {
                 this.setState({
@@ -143,7 +140,6 @@ export default class BioUsersComponent extends React.Component {
                     Message: "User Status Updated Successfully!",
                     ShowMessage: "",
                 });
-
             }
             else {
                 this.setState({
@@ -151,7 +147,6 @@ export default class BioUsersComponent extends React.Component {
                     ShowMessage: ""
                 });
             }
-
         })
     }
     ChangeSupervisor = (e) => {
@@ -226,10 +221,8 @@ export default class BioUsersComponent extends React.Component {
                 this.setState({
                     BioUsers: response.data,
                     Alerts: "",
-
                 })
             }
-
         }).catch(e => {
             console.log(e)
         })
@@ -242,7 +235,6 @@ export default class BioUsersComponent extends React.Component {
                         value = false;
                     else if (value == "false")
                         value = true;
-
                 }
                 return { ...item, [dataType]: value };
             }
@@ -331,8 +323,7 @@ export default class BioUsersComponent extends React.Component {
         })
         this.setState({ isLinkAdminChangeOpen: true, Alerts: "none" });
     }
-    changeAdminUser = (e) => {
-       
+    changeAdminUser = (e) => { 
         this.setState({
             SelectedAdminUserId: e.target.value,
 
@@ -344,9 +335,7 @@ export default class BioUsersComponent extends React.Component {
     closePINChangeModal = () => this.setState({ isPINChangeOpen: false, UserId: "" });
     closeAudioChangeModal = () => this.setState({ isAudioChangeOpen: false, UserId: "" });
     render() {
-
         return (
-
             <div>
                 <div className="app-content content">
                     <div className="content-overlay"></div>

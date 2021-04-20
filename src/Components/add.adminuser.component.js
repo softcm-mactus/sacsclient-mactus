@@ -243,7 +243,7 @@ export default class AdminUserManagement extends React.Component {
                                                         <div className="form-group row">
                                                             <label className="col-md-3 label-control" for="userinput1">User ID</label>
                                                             <div className="col-md-9">
-                                                                <input type="text" onChange={this.UserIdChange} minLength="6" id="userinput1"
+                                                                <input type="text" onChange={this.UserIdChange} minLength={6} id="userinput1"
                                                                     className="form-control border-primary"
                                                                     placeholder="User ID" name="firstname" 
                                                                     disabled={this.state.ActionName=="Update"?"disabled":""} 

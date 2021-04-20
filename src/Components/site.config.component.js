@@ -136,7 +136,9 @@ export default class SiteConfigCompoenet extends React.Component {
                                                                                     }
                                                                                     {
                                                                                         this.state.PlantConfig[index].type === 3 ?
-                                                                                            <input type="text"
+                                                                                            <input type="test"
+                                                                                               // webkitdirectory="true"
+                                                                                                //  directory={this.state.PlantConfig[index].value}
                                                                                                 value={this.state.PlantConfig[index].value}
                                                                                                 onChange={e => this.handleInputChange(index, 'value', e.target.value)} id="eventRegInput1"
                                                                                                 className="form-control" placeholder="name" required></input>
@@ -172,10 +174,10 @@ export default class SiteConfigCompoenet extends React.Component {
                                             <div className="alert alert-success" role="alert" style={{ display: this.state.Alerts }}>
                                                 <span className="text-bold-600"></span> {this.state.Message}
                                             </div>
-                                            <button type="button" className="btn btn-warning mr-1">
-                                                <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>Cancel</button>
+                                            {/* <button type="button" className="btn btn-warning mr-1">
+                                                <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>Cancel</button> */}
                                             <button className="btn btn-primary" type="submit" onClick={this.handleSubmit}>
-                                                <FontAwesomeIcon icon={faCheck}></FontAwesomeIcon>Save</button>
+                                                <FontAwesomeIcon icon={faCheck}></FontAwesomeIcon>  Update</button>
                                         </div>
                                     </form>
                                 </div>

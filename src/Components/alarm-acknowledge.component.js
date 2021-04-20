@@ -204,7 +204,6 @@ export default class AlarmHistory extends React.Component {
                                 </div>
                             </div>
                         </section>
-
                     </div>
                 </div>
             </div>

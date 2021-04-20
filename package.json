@@ -23,9 +23,11 @@
     "moment-timezone": "^0.5.32",
     "rc-time-picker": "^3.7.3",
     "react": "^17.0.1",
+    "react-app-polyfill": "^2.0.0",
     "react-bootstrap": "^1.4.3",
     "react-datepicker": "^3.4.1",
     "react-dom": "^17.0.1",
+    "react-error-boundary": "^3.1.1",
     "react-idle-timer": "^4.5.4",
     "react-loader-spinner": "^4.0.0",
     "react-moment": "^1.1.1",
@@ -57,6 +59,7 @@
       "not op_mini all"
     ],
     "development": [
+      "ie 11",
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"

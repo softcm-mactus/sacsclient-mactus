@@ -29,26 +29,27 @@ export default class LoginComponent extends React.Component {
         this.handleChange = this.handleChange.bind(this);
     }
     handleChange(event) {
-       
+
         this.setState({
             [event.target.name]: event.target.value
-            
+
         });
     }
 
     handleSubmit(event) {
 
+
         const { UserId, Password } = this.state;
-       
+
         var data = {
-            UserId: this.state.UserId,
-            Password: this.state.Password
+            UserId: 'Admin123',//this.state.UserId,
+            Password: 'Mactus@123',//this.state.Password
         };
-       
+        if (!this.state.UserId || !this.state.Password)
+            return false
         SACSDataServices.CheckUserskLogin(data).then(user => {
-            
+
             if (user.data != null && user.data != "") {
-               
                 this.setState({
                     ActionName: "Logout",
                     UserId: user.data.userId,
@@ -56,32 +57,32 @@ export default class LoginComponent extends React.Component {
                     LastName: user.data.lastName,
                     Token: user.data.token,
                     timeout: user.data.timeOut,
-                });               
-                if(this.state.UserId!=null && this.state.UserId!=""){
+                });
+                if (this.state.UserId != null && this.state.UserId != "") {
                     localStorage.setItem('UserId', this.state.UserId);
                     localStorage.setItem('Token', this.state.Token);
                     localStorage.setItem('FirstName', this.state.FirstName);
-                    localStorage.setItem('timeout', this.state.timeout);                           
+                    localStorage.setItem('timeout', this.state.timeout);
                     this.props.history.push("/");
-                }                
+                }
             }
             else {
                 //alert(JSON.stringify(user.data))
-                SACSDataServices.CheckUserLoginError(data).then(error => {                                    
+                SACSDataServices.CheckUserLoginError(data).then(error => {
                     this.setState({
                         loginErrors: error.data,
                         Alert: ""
                     })
-                }).catch(e=>{
+                }).catch(e => {
 
-                })                
-            }            
+                })
+            }
             console.log(user.data);
         }).catch(e => {
-            console.log("login error", e);            
-           // alert(JSON.stringify(e))
+            console.log("login error", e);
+            // alert(JSON.stringify(e))
             this.setState({
-                loginErrors:"Something went wrong ",
+                loginErrors: "Something went wrong ",
                 Alert: ""
             })
         });
@@ -107,8 +108,8 @@ export default class LoginComponent extends React.Component {
                                 <div className="card-body">
                                     <form onSubmit={e => e.preventDefault()} className="form-horizontal form-simple"  >
                                         <fieldset className="form-group position-relative has-icon-left mb-0">
-                                            <input type="text" onChange={this.handleChange} 
-                                            // style={{textTransform:"uppercase"}}
+                                            <input type="text" onChange={this.handleChange}
+                                                // style={{textTransform:"uppercase"}}
                                                 className="form-control form-control-lg" autoComplete="false"
                                                 id="UserId" name="UserId" placeholder="Please enter username" required></input>
                                             <div className="form-control-position">
@@ -118,7 +119,7 @@ export default class LoginComponent extends React.Component {
                                         <br></br>
                                         <fieldset className="form-group position-relative has-icon-left">
                                             <input type="password" className="form-control form-control-lg"
-                                                autoComplete="false" id="Password" name="Password"
+                                                autoComplete="false" id="Password" name="Password" 
                                                 onChange={this.handleChange} placeholder="Please enter password" required></input>
                                             <div className="form-control-position">
                                                 <FontAwesomeIcon icon={faKey} ></FontAwesomeIcon>

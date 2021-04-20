@@ -1,57 +1,74 @@
 import React from 'react';
 import SACSDataServices from "../Services/sacs.services";
-import moment from "moment";
-import { Modal, Button } from "react-bootstrap";
-//const [lineid, selectedLineID] = useState(0);
-class PageHeader extends React.PureComponent {
-    handle = null;
+import moment from "moment";// Moment for date and time 
+import { Modal, Button } from "react-bootstrap";//
+/*
+ * The Dashboard Compoenet contains all dashboard functionalies and UI designs.
+ * Render part having all design(UI) code and data bindings.
+ * 
+ */
+class DashboardComponent extends React.PureComponent {
+    nRemoveTimer = null;// Global variable to stop timer if dashboard page is not exists.
+    //The constructor is a method used to initialize an object's state in a class. 
+    //It automatically called during the creation of an object in a class
     constructor(props) {
         super(props);
-        this.retriveAllLinesDate = this.retriveAllLinesDate.bind(this);
+        //Get All lines data to bind in dropdown control.
+        this.retriveAllLinesData = this.retriveAllLinesData.bind(this);
+        //Get all bio readers to show in bio readers list and status.
         this.retrieveBioreaders = this.retrieveBioreaders.bind(this);
+        //Retrive maximum count details to show in dashboard screen. 
         this.retriveMaxCountDetails = this.retriveMaxCountDetails.bind(this);
+        //Retrive All curretly users inside the filling machine while dashboard page loading.
         this.retrieveCurrentInUsers = this.retrieveCurrentInUsers.bind(this);
-        this.retrieveBioreaders = this.retrieveBioreaders.bind(this);
+        //Get all HMI device details and status to show in dashboard screen.         
         this.retriveGetAllHMIStatus = this.retriveGetAllHMIStatus.bind(this);
+        //Get All doors detail and status by line ID while changing the drop down in dashboard.
         this.retriveDoorsByLineID = this.retriveDoorsByLineID.bind(this);
+        //Get all configured command line configurations by line ID.
         this.retriveAllComandByLineID = this.retriveAllComandByLineID.bind(this);
         this.state = {
             Lines: [],
-            LineId: 1,
+            nLineId: 1,
             users: [],
             bioreader: [],
             HMIs: [],
             Doors: [],
             Commands: [],
             Alerts: [],
-            MaxCount: "",
-            CurrentCount: "",
-            SelectedLineID: 0,
-            SelectedLineName: "Sterile Corridor",
-            CommandEvent: "",
-            ShowBioreader: "",
-            ShowHMIStstus: "none",
-            ShowSubLine: "",
-            isCommandOpen: false,
-            CommendAlerts: "none",
-            CommandMessage: "",
-            CommandId: "",
-            Remarks: ""
+            sMaxCount: "",
+            nSyncDurations: 1000,
+            sCurrentCount: "",
+            nSelectedLineID: 0,
+            s_SelectedLineName: "",
+            s_CommandEvent: "",
+            s_ShowBioreader: "",
+            s_ShowHMIStstus: "none",
+            s_ShowSubLine: "",
+            b_isCommandOpen: false,
+            s_CommendAlerts: "none",
+            s_CommandMessage: "",
+            s_CommandId: "",
+            s_Remarks: "",
+            n_CurrentLineUserCount: 0,
+            bIsResetCountOpen: false,
+            isIndividualOpenOpen: false,
+            b_IsCommandConfirm: false,
         }
     }
+    // Calling functions when componet are start to Mount. On loading the page.
     componentDidMount() {
 
-        this.retriveAllLinesDate();
+        this.retriveAllLinesData();
         this.retriveDoorsByLineID();
         this.retriveAllComandByLineID();
-        this.handle = this.timer = setInterval(() => {
+        //Sync all functions inside with 1 Min of interval. 
+        this.nRemoveTimer = this.timer = setInterval(() => {
             this.retrieveBioreaders();
             this.retriveGetAllHMIStatus();
             this.retriveDashboardAlert();
-            if (this.state.SelectedLineID > 0) {
-                //alert(this.state.SelectedLineID);
-                this.retriveUsersandCurrentandMaxCountDetails(this.state.SelectedLineID);
-
+            if (this.state.nSelectedLineID > 0) {
+                this.retriveUsersandCurrentandMaxCountDetails(this.state.nSelectedLineID);
             }
             else {
                 this.retrieveCurrentInUsers();
@@ -59,56 +76,68 @@ class PageHeader extends React.PureComponent {
                 this.retriveDoorsByLineID();
                 this.retriveAllComandByLineID();
             }
-        }, 1000);
+        }, this.state.nSyncDurations);// 
     }
+    // Clear timer when component Unmount.
     componentWillUnmount() {
         clearInterval(this.timer);
     }
-    retriveAllLinesDate() {
+    componentDidCatch() {
+        throw new Error("Network error")
+    }
+    //Get all lines data.
+    retriveAllLinesData() {
+        // Callling method GetALlLines() using SACSDataServices API
         SACSDataServices.GetALlLines().then(response => {
             this.setState({
-                Lines: response.data
+                // Get result from API and store data in Lines Array.
+                Lines: response.data,
+                //Set Selected line name when page load.
+                s_SelectedLineName: response.data[0].lineName
             });
-            //console.log(response.data);
         }).catch(e => {
-            console.log(e);
+            console.log(e)
         });
     }
-
+    //Get Maximim and current count details.
     retriveMaxCountDetails() {
+        // Callling method UpdateUIConfiguration() using SACSDataServices API
         SACSDataServices.UpdateUIConfiguration(1).then(response => {
             this.setState({
-                MaxCount: response.data.m_nMaxCount,
-                CurrentCount: response.data.m_nCurrentCount
+                sMaxCount: response.data.m_nMaxCount,
+                sCurrentCount: response.data.m_nCurrentCount
             });
-            //console.log(response.data);
         })
             .catch(e => {
                 console.log(e);
             });
     }
+    // Get all doors details and status by Line ID.
     retriveDoorsByLineID() {
         SACSDataServices.LoadDoorStatusPoints(1).then(response => {
-
             this.setState({
                 Doors: response.data
             });
-            //console.log(response.data);
         }).catch(e => {
             console.log(e);
         });
     }
+    //Get All command configurations by Line ID.
     retriveAllComandByLineID() {
         SACSDataServices.LoadLineCommandPoints(1).then(response => {
-
             this.setState({
                 Commands: response.data
             });
-            //console.log(response.data);
+
         }).catch(e => {
             console.log(e);
+            this.setState({
+                nSyncDurations: 60000
+            })
+            //alert(this.state.nSyncDurations)
         });
     }
+    //Get Dashboard alert details e.g: Alarm Acknowledgement, Discrepancies Acknowledgement.
     retriveDashboardAlert() {
         SACSDataServices.GetDashboardAlert().then(response => {
             this.setState({
@@ -118,25 +147,36 @@ class PageHeader extends React.PureComponent {
 
         });
     }
+    // Get all current in side users in filling line when dashnboard page is loading initially.
     retrieveCurrentInUsers() {
         SACSDataServices.GetAllCurrentInUsers().then(response => {
 
             this.setState({
                 users: response.data
             });
-            //console.log(response.data);
+            if (response.data.length > 0) {
+                this.setState({
+                    n_CurrentLineUserCount: response.data.length
+                })
+            }
+            else {
+                this.setState({
+                    n_CurrentLineUserCount: 0
+                })
+            }
         })
             .catch(e => {
                 console.log(e);
             });
     }
+
     retrieveBioreaders() {
         SACSDataServices.GetBioReaders()
             .then(response => {
                 this.setState({
                     bioreader: response.data
                 });
-                // console.log(response.data);
+
             })
             .catch(e => {
                 console.log(e);
@@ -147,15 +187,14 @@ class PageHeader extends React.PureComponent {
             this.setState({
                 HMIs: response.data
             });
-            //console.log(response.data);
         })
             .catch(e => {
-                console.log(e);
+                //console.log(e);
             });
     }
 
     retriveUsersandCurrentandMaxCountDetails() {
-        SACSDataServices.GetAllUsersByLineId(this.state.SelectedLineID).then(response => {
+        SACSDataServices.GetAllUsersByLineId(this.state.nSelectedLineID).then(response => {
             this.setState({
                 users: response.data,
             });
@@ -163,32 +202,32 @@ class PageHeader extends React.PureComponent {
         }).catch(e => {
             console.log(e);
         });
-        SACSDataServices.UpdateUIConfiguration(this.state.SelectedLineID).then(response => {
+        SACSDataServices.UpdateUIConfiguration(this.state.nSelectedLineID).then(response => {
             this.setState({
-                MaxCount: response.data.m_nMaxCount,
-                CurrentCount: response.data.m_nCurrentCount
+                sMaxCount: response.data.m_nMaxCount,
+                sCurrentCount: response.data.m_nCurrentCount
             });
             //console.log(response.data);
         }).catch(e => {
-            console.log(e);
+            //console.log(e);
         });
-        SACSDataServices.LoadDoorStatusPoints(this.state.SelectedLineID).then(response => {
+        SACSDataServices.LoadDoorStatusPoints(this.state.nSelectedLineID).then(response => {
 
             this.setState({
                 Doors: response.data
             });
             //console.log(response.data);
         }).catch(e => {
-            console.log(e);
+            //console.log(e);
         });
-        SACSDataServices.LoadLineCommandPoints(this.state.SelectedLineID).then(response => {
+        SACSDataServices.LoadLineCommandPoints(this.state.nSelectedLineID).then(response => {
 
             this.setState({
                 Commands: response.data
             });
             //console.log(response.data);
         }).catch(e => {
-            console.log(e);
+            //console.log(e);
         });
     }
 
@@ -196,13 +235,24 @@ class PageHeader extends React.PureComponent {
         //  alert(event.target.value)
         event.preventDefault();
         this.setState({
-            SelectedLineName: event.nativeEvent.target[event.target.value - 1].text,
-            LineId: event.target.value,
+            s_SelectedLineName: event.nativeEvent.target[event.target.value - 1].text,
+            nLineId: event.target.value,
         });
         SACSDataServices.GetAllUsersByLineId(event.target.value).then(response => {
+            if (response.data.length > 0) {
+                this.setState({
+                    n_CurrentLineUserCount: response.data.length
+                })
+            }
+            else {
+                this.setState({
+                    n_CurrentLineUserCount: 0
+                })
+            }
+            //alert( this.state.CurrentLineUserCount)
             this.setState({
                 users: response.data,
-                SelectedLineID: event.target.value,
+                nSelectedLineID: event.target.value,
             });
             //console.log(response.data);
         }).catch(e => {
@@ -210,8 +260,8 @@ class PageHeader extends React.PureComponent {
         });
         SACSDataServices.UpdateUIConfiguration(event.target.value).then(response => {
             this.setState({
-                MaxCount: response.data.m_nMaxCount,
-                CurrentCount: response.data.m_nCurrentCount
+                sMaxCount: response.data.m_nMaxCount,
+                sCurrentCount: response.data.m_nCurrentCount
             });
             //console.log(response.data);
         }).catch(e => {
@@ -226,17 +276,17 @@ class PageHeader extends React.PureComponent {
             console.log(e);
         });
         if (event.target.value > 1) {
-            this.setState({ ShowSubLine: "none" })
+            this.setState({ s_ShowSubLine: "none" })
         }
         else {
-            this.setState({ ShowSubLine: "" })
+            this.setState({ s_ShowSubLine: "" })
         }
 
     }
     OnCommandRowClick = (e) => {
 
         this.setState({
-            CommandEvent: e.target.value
+            s_CommandEvent: e.target.value
         })
         e.preventDefault();
 
@@ -244,59 +294,99 @@ class PageHeader extends React.PureComponent {
     onClickLineAreaCommand = (e) => {
         SACSDataServices.GetCommandNameByCommandId(e.target.value).then(response => {
             this.setState({
-                CommandEvent: response.data,
-                CommandId: e.target.value,
-                Remarks: ""
+                s_CommandEvent: response.data,
+                s_CommandId: e.target.value,
+                s_Remarks: ""
             })
-            //console.log(response.data);
+           
+            
         }).catch(e => {
             console.log(e);
         });
-        this.openAckIndModal()
+       // alert(e.target.value)
+        SACSDataServices.ValidateCommand(e.target.value, localStorage.getItem('UserId'), "Ok").then(response => {
+          //  alert(response.data)
+          if (response.data !== "Ok") {
+               this.setState({
+                   s_CommendAlerts: response.data,
+                   s_CommandMessage: response.data,
+               })
+               this.openCommandConfirmModal();
+              
+           }
+           
+       }).catch(e => {
+           console.log(e);
+       });
+       // this.openCommanddModal()
     }
     showToBioReader = () => {
         this.setState({
-            ShowHMIStstus: "none",
-            ShowBioreader: ""
+            s_ShowHMIStstus: "none",
+            s_ShowBioreader: ""
         })
     }
     showToHMIStatus = () => {
         this.setState({
-            ShowBioreader: "none",
-            ShowHMIStstus: ""
+            s_ShowBioreader: "none",
+            s_ShowHMIStstus: ""
         })
     }
-    openAckIndModal = () => {
+    openCommanddModal = () => {
         this.setState({
-            isCommandOpen: true,
-            CommendAlerts: "none"
+            b_isCommandOpen: true,
+            // isIndividualOpenOpen:true,
+            s_CommendAlerts: "none"
         })
+    }
+    openResetCountModel = () => {
+        this.setState({
+            bIsResetCountOpen: true,
+            s_CommendAlerts: "none"
+        })
+    }
+    openCommandConfirmModal = () => {
+        this.setState({
+            b_IsCommandConfirm: true,
+            s_CommendAlerts: "none"
+        })
+    }
+
+    ReserCountClick = () => {
+        this.openResetCountModel();
+    }
+    handleSaveResetCount = () => {
+
     }
     handleSaveCommand = () => {
 
-        if ((this.state.Remarks == null || this.state.Remarks == "") && this.state.Remarks.length>=6  )
+        if ((this.state.s_Remarks == null || this.state.s_Remarks == "") && this.state.s_Remarks.length >= 6)
             return false;
-        SACSDataServices.SaveCommand(this.state.CommandId, localStorage.getItem('UserId'), this.state.Remarks).then(response => {
-            //alert(response.data)
+        SACSDataServices.SaveCommand(this.state.s_CommandId, localStorage.getItem('UserId'), this.state.s_Remarks).then(response => {
+            // alert(response.data)
             if (response.data === "Ok") {
                 this.setState({
-                    CommendAlerts: "",
-                    CommandMessage: "Command Saved Successfully",
-                    Remarks: ""
+                    s_CommendAlerts: "",
+                    s_CommandMessage: "Command Saved Successfully",
+                    s_Remarks: ""
                 })
             }
-            else if (response.data != "Ok" && response.data.minLength > 1) {
+            else if (response.data !== "Ok") {
                 this.setState({
-                    CommendAlerts: response.data,
-                    CommandMessage: response.data,
+                    s_CommendAlerts: response.data,
+                    //s_CommandMessage: response.data,
                 })
+                this.openCommandConfirmModal();
+                // alert(response.data)
             }
             //console.log(response.data);
         }).catch(e => {
             console.log(e);
         });
     }
-    closeAckIndModal = () => this.setState({ isCommandOpen: false, CommendAlerts: "none", Remarks: "" });
+    closeCommandsdModal = () => this.setState({ b_isCommandOpen: false, s_CommendAlerts: "none", s_Remarks: "" });
+    closeResetCountModal = () => this.setState({ bIsResetCountOpen: false, s_CommendAlerts: "none", s_Remarks: "" });
+    closeCommandConfirmModal = () => this.setState({ b_IsCommandConfirm: false, s_CommendAlerts: "none", s_Remarks: "" });
 
     render() {
         return (
@@ -332,8 +422,16 @@ class PageHeader extends React.PureComponent {
                                                 <i className="icon p-1 icon-pie-chart customize-icon font-large-2 p-1"></i>
                                             </span>
                                             <div className="stats-amount col-md-10">
-                                                <h4 className="heading-text text-bold-600"> {this.state.CurrentCount}</h4>
-                                                <h5 className="sub-heading text-bold-600"> {this.state.MaxCount}</h5>
+                                                <h4 className="heading-text text-bold-600"> {this.state.sCurrentCount}</h4>
+                                                <h5 className="sub-heading text-bold-600"> {this.state.sMaxCount}</h5>
+                                                {
+                                                    this.state.n_CurrentLineUserCount === 0 || localStorage.getItem("UserId") === null ?
+                                                        <button onClick={this.ReserCountClick}
+                                                            className="btn btn-primary" disabled>Reset User Count</button>
+                                                        :
+                                                        <button onClick={this.ReserCountClick}
+                                                            className="btn btn-primary">Reset User Count</button>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -347,12 +445,13 @@ class PageHeader extends React.PureComponent {
                                                 {
                                                     this.state.Alerts.discrepanciesCount == 0 ?
                                                         <button onClick={() => window.location.href = '/DiscrAck'}
-                                                            className="btn btn-success" disabled={!localStorage.getItem("FirstName") && "disabled"} >Acknowledge Discrepancies</button>
+                                                            className="btn btn-success" disabled={!localStorage.getItem("UserId") && "disabled"} >Acknowledge Discrepancies</button>
                                                         :
                                                         <button onClick={() => window.location.href = '/DiscrAck'}
-                                                            className="btn btn-danger blink" disabled={!localStorage.getItem("FirstName") && "disabled"}
+                                                            className="btn btn-danger blink" disabled={!localStorage.getItem("UserId") && "disabled"}
                                                         >Acknowledge Discrepancies</button>
                                                 }
+
                                             </div>
                                         </div>
                                     </div>
@@ -394,7 +493,7 @@ class PageHeader extends React.PureComponent {
                                     </div>
                                     <div className="col-4 d-flex justify-content-end pr-3">
                                         <div className="dark-text">
-                                            <h4 className="power-consumption-active-tab text-bold-500">{this.state.SelectedLineName}</h4>
+                                            <h4 className="power-consumption-active-tab text-bold-500">{this.state.s_SelectedLineName}</h4>
                                         </div>
                                     </div>
                                 </div>
@@ -404,7 +503,7 @@ class PageHeader extends React.PureComponent {
                                             <thead className="">
                                                 <tr>
                                                     <th>EID</th>
-                                                    <th style={{ display: this.state.ShowSubLine }}>Sub Line Name</th>
+                                                    <th style={{ display: this.state.s_ShowSubLine }}>Sub Line Name</th>
                                                     <th>User Name</th>
                                                     <th>Entry Time</th>
                                                     <th>Door Status</th>
@@ -416,7 +515,7 @@ class PageHeader extends React.PureComponent {
                                                     this.state.users.map(usr => (
                                                         <tr key={usr.userEID} style={{ backgroundColor: usr.rowColour }}>
                                                             <td>{usr.userEID}</td>
-                                                            <td style={{ display: this.state.ShowSubLine }}>{usr.subLineName}</td>
+                                                            <td style={{ display: this.state.s_ShowSubLine }}>{usr.subLineName}</td>
                                                             <td>{usr.userName}</td>
                                                             <td>{moment(usr.inTime).format("HH:mm:ss")}</td>
                                                             <td>{usr.doorStatus}</td>
@@ -490,10 +589,63 @@ class PageHeader extends React.PureComponent {
                             </div>
                         </div>
                     </div>
-                    <Modal show={this.state.isCommandOpen} onHide={this.openAckIndModal}>
+                    <Modal show={this.state.b_isCommandOpen} onHide={this.openCommanddModal}>
                         <Modal.Header closeButton className="modal-header bg-danger white">
                             <Modal.Title >
-                                <h4 className="modal-title text-center" id="myModalLabel10">Please confirm to {this.state.CommandEvent} </h4>
+                                <h4 className="modal-title text-center" id="myModalLabel10">Please confirm to {this.state.s_CommandEvent} </h4>
+                            </Modal.Title>
+                        </Modal.Header>
+                        <form onSubmit={e => e.preventDefault()}>
+                            <Modal.Body className="modal-body">
+                                <div>
+                                    <h4>Please enter your remarks </h4>
+                                    <div className="form-group">
+                                        <input type="text" value={this.state.s_Remarks}
+                                            onChange={e => this.setState({ s_Remarks: e.target.value })}
+                                            placeholder="Remarks" minLength="6" className="form-control" required></input>
+                                    </div>
+                                </div>
+                                <div className="alert alert-success" role="alert" style={{ display: this.state.s_CommendAlerts }}>
+                                    <span className="text-bold-600">Done!</span> {this.state.s_CommendAlerts}
+                                </div>
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={this.closeCommandsdModal}> Close </Button>
+                                <Button type="Submit" onClick={() => this.handleSaveCommand()} variant="secondary"> Submit </Button>
+                            </Modal.Footer>
+                        </form>
+                    </Modal>
+                    <Modal show={this.state.b_IsCommandConfirm} onHide={this.openCommandConfirmModal}>
+                        <Modal.Header closeButton className="modal-header bg-danger white">
+                            <Modal.Title >
+                                <h4 className="modal-title text-center" id="myModalLabel10">
+                                {this.state.s_CommandEvent} </h4>
+                            </Modal.Title>
+                        </Modal.Header>
+                        <form onSubmit={e => e.preventDefault()}>
+                            <Modal.Body className="modal-body">
+                                <div>
+                                    <h4>Please enter your remarks </h4>
+                                    <div className="form-group">
+                                        <input type="text" value={this.state.s_Remarks}
+                                            onChange={e => this.setState({ s_Remarks: e.target.value })}
+                                            placeholder="Remarks" minLength="6" className="form-control" required></input>
+                                    </div>
+                                </div>
+                                <div className="alert alert-success" role="alert" style={{ display: this.state.s_CommendAlerts }}>
+                                    <span className="text-bold-600">Done!</span> {this.state.s_CommendAlerts}
+                                </div>
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={this.closeCommandConfirmModal}> Close </Button>
+                                <Button type="Submit" onClick={() => this.handleSaveCommand()} variant="secondary"> Submit </Button>
+                            </Modal.Footer>
+                        </form>
+                    </Modal>
+                    <Modal show={this.state.bIsResetCountOpen} onHide={this.openResetCountModel}>
+                        <Modal.Header closeButton className="modal-header bg-danger white">
+                            <Modal.Title >
+                                <h4 className="modal-title text-center" id="myModalLabel10">Confirm to Acknowledge Discrepancies</h4>
                             </Modal.Title>
                         </Modal.Header>
                         <form onSubmit={e => e.preventDefault()}>
@@ -501,22 +653,19 @@ class PageHeader extends React.PureComponent {
                                 <div >
                                     <h4>Please enter remarks </h4>
                                     <div className="form-group">
-                                        <input type="text" value={this.state.Remarks}
-                                            onChange={e => this.setState({ Remarks: e.target.value })}
-                                            placeholder="Remarks" minLength="6" className="form-control" required></input>
+                                        <input type="text" value={this.state.s_Remarks} onChange={e => this.setState({ s_Remarks: e.target.value })} placeholder="Remarks" minLength="6" className="form-control" required></input>
                                     </div>
                                 </div>
-                                <div className="alert alert-success" role="alert" style={{ display: this.state.CommendAlerts }}>
-                                    <span className="text-bold-600">Done!</span> {this.state.CommandMessage}
+                                <div className="alert alert-success" role="alert" style={{ display: this.state.s_CommendAlerts }}>
+                                    <span className="text-bold-600">Done!</span> Your command saved Successfully.
                                 </div>
                             </Modal.Body>
                             <Modal.Footer>
-                                <Button variant="secondary" onClick={this.closeAckIndModal}> Close </Button>
-                                <Button type="Submit" onClick={() => this.handleSaveCommand()} variant="secondary"> Submit </Button>
+                                <Button variant="secondary" onClick={this.closeResetCountModal}> Close </Button>
+                                <Button type="Submit" onClick={() => this.handleSubmitSingleAck()} variant="secondary"> Submit </Button>
                             </Modal.Footer>
                         </form>
                     </Modal>
-
                     <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-6 col-12 region-stats-chart">
                         <div className="card statistic-card">
                             <div className="card-content">
@@ -528,7 +677,8 @@ class PageHeader extends React.PureComponent {
                                 <ul className="nav nav-pills card-tabs pl-2 border-bottom-blue-grey border-bottom-lighten-5" id="pills-tab" role="tablist">
 
                                     <li className="nav-item">
-                                        <a onClick={this.showToBioReader}> <h4 className="nav-link text-primary bg-transparent active px-0 mr-1 py-1"
+                                        <a onClick={this.showToBioReader}> <h4
+                                            className="nav-link text-primary bg-transparent active px-0 mr-1 py-1 "
                                             id="pills-home-tab" data-toggle="pill" href="#pills-home"
                                             role="tab" aria-controls="pills-home" aria-selected="true">HMI Status</h4></a>
                                     </li>
@@ -544,7 +694,7 @@ class PageHeader extends React.PureComponent {
                                             <i className="icon icon-settings"></i></h4></a>
                                     </li> */}
                                 </ul>
-                                <div style={{ display: this.state.ShowBioreader }} className="tab-pane fade show ">
+                                <div style={{ display: this.state.s_ShowBioreader }} className="tab-pane fade show ">
                                     <div className="body-header pl-2">
                                         <div className="d-flex">
                                             <h5 className="mr-2 body-header-title text-bold-600 mb-0">HMI Devices</h5>
@@ -567,11 +717,11 @@ class PageHeader extends React.PureComponent {
                                                                         <td>{hmi.hmiName} </td>
                                                                     </tr>
                                                                 ) : (
-                                                                        <tr  style={{ backgroundColor: "#ff8080" }}>
-                                                                            <td>{hmi.lineName}</td>
-                                                                            <td>{hmi.hmiName} </td>
-                                                                        </tr>
-                                                                    )
+                                                                    <tr style={{ backgroundColor: "#ff8080" }}>
+                                                                        <td>{hmi.lineName}</td>
+                                                                        <td>{hmi.hmiName} </td>
+                                                                    </tr>
+                                                                )
                                                             ))}
                                                     </tbody>
                                                 </table>
@@ -580,7 +730,7 @@ class PageHeader extends React.PureComponent {
                                     </div>
                                 </div>
                                 <div className="tab-pane fade show " role="tabpanel"
-                                    style={{ display: this.state.ShowHMIStstus}}>
+                                    style={{ display: this.state.s_ShowHMIStstus }}>
                                     <div className="body-header pl-2">
                                         <div className="d-flex">
                                             <h5 className="mr-2 body-header-title text-bold-600 mb-0">Bio Readers</h5>
@@ -597,7 +747,7 @@ class PageHeader extends React.PureComponent {
                                                     <tbody>
                                                         {
                                                             this.state.bioreader.map(reader => (
-                                                                <tr  style={{ backgroundColor: reader.rowColour }}>
+                                                                <tr style={{ backgroundColor: reader.rowColour }}>
                                                                     <td>{reader.lineName}</td>
                                                                     <td>{reader.deviceName}</td>
                                                                 </tr>
@@ -608,7 +758,7 @@ class PageHeader extends React.PureComponent {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                             </div>
 
                         </div>
@@ -626,7 +776,8 @@ class ServeerStatus extends React.Component {
         super(props);
         this.retriveSACSServerStatus = this.retriveSACSServerStatus.bind(this);
         this.state = {
-            Serverdata: []
+            Serverdata: [],
+            // nSyncDurations:1000,
         }
     }
     componentDidMount() {
@@ -645,6 +796,9 @@ class ServeerStatus extends React.Component {
             //console.log(response.data);
         }).catch(e => {
             console.log(e);
+            // this.setState({
+            //     nSyncDurations:60000
+            // })
         })
     }
 
@@ -669,7 +823,7 @@ class ServeerStatus extends React.Component {
                                     {
                                         this.state.Serverdata.map(ser => (
 
-                                            <tr  style={{ backgroundColor: ser.rowColour }}>
+                                            <tr style={{ backgroundColor: ser.rowColour }}>
                                                 <td>{ser.serverNameInUi}</td>
                                                 <td>{moment(ser.serverUpdatedTime).format("HH:mm:ss")}</td>
                                             </tr>
@@ -693,14 +847,15 @@ class PLCStatus extends React.Component {
         super(props);
         this.retriveGetAllPLCStatus = this.retriveGetAllPLCStatus.bind(this)
         this.state = {
-            PLCSData: []
+            PLCSData: [],
+            nSyncDurations: 1000,
         }
     }
     componentDidMount() {
         this.timer = setInterval(() => {
 
             this.retriveGetAllPLCStatus();
-        }, 1000);
+        }, this.state.nSyncDurations);
     }
     componentWillUnmount() {
         clearInterval(this.timer);
@@ -713,6 +868,9 @@ class PLCStatus extends React.Component {
             //console.log(response.data);
         }).catch(e => {
             console.log(e);
+            this.setState({
+                nSyncDurations: 60000
+            })
         })
     }
     render() {
@@ -745,7 +903,7 @@ class PLCStatus extends React.Component {
                                                 <tbody>
                                                     {
                                                         this.state.PLCSData.map(plc => (
-                                                            <tr  style={{ backgroundColor: plc.rowColour }}>
+                                                            <tr style={{ backgroundColor: plc.rowColour }}>
                                                                 <td>{plc.lineName}</td>
                                                                 <td>{plc.plcName}</td>
                                                             </tr>
@@ -778,7 +936,7 @@ export default class Page extends React.Component {
                     </div>
                     <div className="content-body" style={{ lineHeight: "1" }, { fontSize: "0.9rem" }}>
                         <React.Fragment>
-                            <PageHeader></PageHeader>
+                            <DashboardComponent></DashboardComponent>
                             <div className="row minimal-modern-charts">
                                 {/* <CurrentInUsers></CurrentInUsers> */}
                                 {/* <Bioreader></Bioreader>
